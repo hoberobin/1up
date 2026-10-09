@@ -1,0 +1,111 @@
+{
+ "steps": [
+  {
+   "t_ms": 0,
+   "status": {
+    "pid": 4242,
+    "sessionId": "11111111-2222-3333-4444-555555555555",
+    "cwd": "/Users/me/Sites/work-example",
+    "startedAt": 1767225540000,
+    "procStart": "Thu Jan  1 00:00:00 2026",
+    "version": "2.1.295",
+    "kind": "interactive",
+    "entrypoint": "cli",
+    "name": "work-example-ab",
+    "nameSource": "derived",
+    "status": "busy",
+    "updatedAt": 1767225600000,
+    "statusUpdatedAt": 1767225600000
+   },
+   "transcriptAppend": []
+  },
+  {
+   "t_ms": 1000,
+   "status": {
+    "pid": 4242,
+    "sessionId": "11111111-2222-3333-4444-555555555555",
+    "cwd": "/Users/me/Sites/work-example",
+    "startedAt": 1767225540000,
+    "procStart": "Thu Jan  1 00:00:00 2026",
+    "version": "2.1.295",
+    "kind": "interactive",
+    "entrypoint": "cli",
+    "name": "work-example-ab",
+    "nameSource": "derived",
+    "status": "idle",
+    "updatedAt": 1767225601000,
+    "statusUpdatedAt": 1767225601000
+   },
+   "transcriptAppend": [
+    "{\"type\": \"system\", \"subtype\": \"turn_duration\", \"durationMs\": 900, \"timestamp\": \"2026-01-01T00:00:00.900Z\", \"isSidechain\": false, \"sessionId\": \"11111111-2222-3333-4444-555555555555\"}"
+   ]
+  },
+  {
+   "t_ms": 3000,
+   "status": {
+    "pid": 4242,
+    "sessionId": "11111111-2222-3333-4444-555555555555",
+    "cwd": "/Users/me/Sites/work-example",
+    "startedAt": 1767225540000,
+    "procStart": "Thu Jan  1 00:00:00 2026",
+    "version": "2.1.295",
+    "kind": "interactive",
+    "entrypoint": "cli",
+    "name": "work-example-ab",
+    "nameSource": "derived",
+    "status": "busy",
+    "updatedAt": 1767225603000,
+    "statusUpdatedAt": 1767225603000
+   },
+   "transcriptAppend": []
+  },
+  {
+   "t_ms": 4000,
+   "status": {
+    "pid": 4242,
+    "sessionId": "11111111-2222-3333-4444-555555555555",
+    "cwd": "/Users/me/Sites/work-example",
+    "startedAt": 1767225540000,
+    "procStart": "Thu Jan  1 00:00:00 2026",
+    "version": "2.1.295",
+    "kind": "interactive",
+    "entrypoint": "cli",
+    "name": "work-example-ab",
+    "nameSource": "derived",
+    "status": "idle",
+    "updatedAt": 1767225604000,
+    "statusUpdatedAt": 1767225604000
+   },
+   "transcriptAppend": [
+    "{\"type\": \"system\", \"subtype\": \"turn_duration\", \"durationMs\": 900, \"timestamp\": \"2026-01-01T00:00:03.900Z\", \"isSidechain\": false, \"sessionId\": \"11111111-2222-3333-4444-555555555555\"}"
+   ]
+  }
+ ],
+ "lookedAt": [
+  2000
+ ],
+ "expect": [
+  {
+   "t_ms": 1000,
+   "state": "done"
+  },
+  {
+   "t_ms": 2000,
+   "state": "idle",
+   "line": "Idle"
+  },
+  {
+   "t_ms": 2500,
+   "state": "idle"
+  },
+  {
+   "t_ms": 3000,
+   "state": "working"
+  },
+  {
+   "t_ms": 4000,
+   "state": "done",
+   "line": "Ended · ran 0s"
+  }
+ ]
+}

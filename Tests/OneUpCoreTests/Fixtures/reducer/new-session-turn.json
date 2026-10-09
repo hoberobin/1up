@@ -1,0 +1,32 @@
+{
+ "steps": [
+  {
+   "t_ms": 0,
+   "status": {
+    "pid": 4242,
+    "sessionId": "11111111-2222-3333-4444-555555555555",
+    "cwd": "/Users/me/Sites/work-example",
+    "startedAt": 1767225540000,
+    "procStart": "Thu Jan  1 00:00:00 2026",
+    "version": "2.1.295",
+    "kind": "interactive",
+    "entrypoint": "cli",
+    "name": "work-example-ab",
+    "nameSource": "derived",
+    "status": "idle",
+    "updatedAt": 1767225600000,
+    "statusUpdatedAt": 1767225600000
+   },
+   "transcriptAppend": [
+    "{\"type\": \"system\", \"subtype\": \"turn_duration\", \"durationMs\": 2000, \"timestamp\": \"2025-12-31T23:59:59.000Z\", \"isSidechain\": false, \"sessionId\": \"11111111-2222-3333-4444-555555555555\"}"
+   ]
+  }
+ ],
+ "expect": [
+  {
+   "t_ms": 0,
+   "state": "done",
+   "line": "Ended · ran 2s"
+  }
+ ]
+}

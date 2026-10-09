@@ -1,0 +1,1581 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>1UP for Claude Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Press+Start+2P&display=swap">
+<style>
+/* Layout: one reading column (~72ch) with wide breakouts for the live menu bar, tables and the appendix. */
+:root {
+  --bg: #f5f6fb; --surface: #ffffff; --sunk: #eceef7; --ink: #14172e; --muted: #575d7c; --line: #d8dbeb;
+  --maze: #2a3bd6; --chomp: #e9b800; --chomp-edge: #8a6a00; --need: #e2680a; --need-old: #d8261c; --done: #1c9353; --fail: #cf3439; --idle: #8a8fa8;
+  --bar: rgba(236,238,246,.94); --bar-ink: #1b1e33; --bar-sub: #6b6f86; --panel: rgba(250,250,253,.98); --shadow: 0 18px 40px rgba(20,23,46,.18);
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Helvetica Neue", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --arcade: "Press Start 2P", ui-monospace, monospace;
+  --native: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0b0d1c; --surface: #13162b; --sunk: #0f1124; --ink: #e8eaf8; --muted: #9ba1c2; --line: #272b4a;
+  --maze: #7a88ff; --chomp: #ffd21f; --chomp-edge: #ffd21f; --need: #ff9a3d; --need-old: #ff4a3d; --done: #3fd184; --fail: #ff666b; --idle: #6c7192;
+  --bar: rgba(30,32,52,.94); --bar-ink: #eef0fb; --bar-sub: #9a9fbd; --panel: rgba(28,30,50,.98); --shadow: 0 18px 40px rgba(0,0,0,.5); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0b0d1c; --surface: #13162b; --sunk: #0f1124; --ink: #e8eaf8; --muted: #9ba1c2; --line: #272b4a;
+  --maze: #7a88ff; --chomp: #ffd21f; --chomp-edge: #ffd21f; --need: #ff9a3d; --need-old: #ff4a3d; --done: #3fd184; --fail: #ff666b; --idle: #6c7192;
+  --bar: rgba(30,32,52,.94); --bar-ink: #eef0fb; --bar-sub: #9a9fbd; --panel: rgba(28,30,50,.98); --shadow: 0 18px 40px rgba(0,0,0,.5); color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 17px/1.6 var(--body); padding-inline: 16px; padding-block: 0 80px }
+.wrap { max-width: 1040px; margin: 0 auto }
+.col { max-width: 72ch }
+h1, h2, h3 { font-family: var(--display); line-height: 1.12; text-wrap: balance; margin: 0 }
+h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800; letter-spacing: -.02em }
+h2 { font-size: 1.75rem; font-weight: 800; letter-spacing: -.01em }
+h3 { font-size: 1.12rem; font-weight: 600 }
+p { margin: 0 }
+code, pre, .mono { font-family: var(--mono); font-size: .86em }
+code { background: var(--sunk); padding: .08em .35em; border-radius: 4px; overflow-wrap: anywhere }
+a { color: var(--maze) }
+.eyebrow { font: 600 .74rem/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--maze) }
+.muted { color: var(--muted) }
+section { display: flex; flex-direction: column; gap: 18px; padding-block: 56px 8px; border-top: 1px solid var(--line) }
+.stack { display: flex; flex-direction: column; gap: 14px }
+.appendix-mark { margin-top: 64px; padding-block: 18px; border-top: 3px double var(--line); font: 600 .8rem var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted) }
+
+header.hero { display: grid; gap: 22px; padding-block: 48px 40px }
+.hero .lede { font-size: 1.22rem; max-width: 60ch }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font: .82rem var(--mono); color: var(--muted) }
+.toc { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .9rem }
+
+.stage { border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  background: radial-gradient(120% 140% at 15% 0%, color-mix(in srgb, var(--maze) 20%, var(--bg)), var(--bg) 70%) }
+.menubar { display: flex; align-items: center; justify-content: flex-end; gap: 16px; height: 30px; padding: 0 14px;
+  background: var(--bar); color: var(--bar-ink); font: 600 13px/1 var(--native); backdrop-filter: blur(12px); white-space: nowrap }
+.menubar .left { margin-right: auto; display: flex; gap: 18px; min-width: 0; overflow: hidden }
+.menubar .left b { font-weight: 700 }
+.item-btn { all: unset; cursor: pointer; display: flex; align-items: center; height: 24px; padding: 0 6px; border-radius: 5px }
+.item-btn:hover, .item-btn[aria-expanded="true"] { background: color-mix(in srgb, var(--bar-ink) 14%, transparent) }
+.item-btn:focus-visible { outline: 2px solid var(--maze) }
+.stage-body { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; padding: 18px; min-height: 480px }
+.panel { grid-column: 2; align-self: start; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow);
+  padding: 6px; font: 13px/1.35 var(--native); color: var(--bar-ink) }
+.group-label { display: flex; align-items: center; gap: 6px; font: 600 11px/1 var(--native); color: var(--bar-sub); padding: 10px 8px 4px }
+.group-label button { all: unset; cursor: pointer }
+.row { all: unset; box-sizing: border-box; width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 10px; align-items: baseline;
+  padding: 6px 8px; border-radius: 6px; cursor: pointer }
+.row:hover, .row:focus-visible { background: color-mix(in srgb, var(--maze) 16%, transparent) }
+.row .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.row .when { font: 11px var(--native); font-variant-numeric: tabular-nums; color: var(--bar-sub) }
+.row .sub { grid-column: 1 / 3; color: var(--bar-sub); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.glyph { width: 14px; height: 14px; flex: none; image-rendering: pixelated }
+.panel-note { padding: 8px; font-size: 12px; color: var(--bar-sub) }
+.panel-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid var(--line); margin-top: 6px; padding: 8px 8px 3px; font-size: 12px; color: var(--bar-sub) }
+.panel-foot button { all: unset; cursor: pointer; color: var(--maze) }
+.panel-foot button:focus-visible, .group-label button:focus-visible { outline: 2px solid var(--maze) }
+.stale { color: var(--need) }
+.sim { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0 }
+.sim h3 { font-size: 1rem }
+.sim p { font-size: .9rem; color: var(--muted) }
+.sim-list { display: flex; flex-direction: column; gap: 6px }
+.sim-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 6px 6px 10px; font-size: .88rem }
+.sim-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden }
+.seg button { all: unset; cursor: pointer; font: 600 11px/1 var(--mono); padding: 6px 7px; color: var(--muted) }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg) }
+.seg button:focus-visible { outline: 2px solid var(--maze); outline-offset: -2px }
+.sim-actions { display: flex; flex-wrap: wrap; gap: 8px }
+.theme-pick { display: flex; flex-wrap: wrap; gap: 6px }
+.theme-pick button { display: inline-flex; align-items: center; gap: 6px }
+.theme-pick button, .use-theme { all: unset; cursor: pointer; font: 600 .78rem/1 var(--mono); padding: 7px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--muted) }
+.theme-pick button[aria-pressed="true"], .use-theme[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink) }
+.theme-pick button:focus-visible, .use-theme:focus-visible { outline: 2px solid var(--maze) }
+.themes { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px }
+.theme-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0 }
+.theme-card .screen { width: 100% !important; height: auto !important; aspect-ratio: 200 / 44; border-radius: 6px; display: block; image-rendering: pixelated; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06) }
+.theme-card header { display: flex; flex-direction: column; gap: 4px }
+.theme-card h3 { font: 12px/1.2 var(--arcade); letter-spacing: .02em }
+.theme-card .insp { font: .72rem var(--mono); color: var(--muted) }
+.theme-states { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 5px 8px; align-items: center; font-size: .78rem; color: var(--muted) }
+.theme-states canvas { background: var(--bar); border-radius: 5px; display: block }
+.theme-card p { font-size: .86rem; color: var(--muted) }
+.theme-card .use-theme { margin-top: auto; text-align: center }
+.btn { all: unset; cursor: pointer; font: 600 .8rem/1 var(--body); padding: 8px 12px; border-radius: 7px; border: 1px solid var(--line); background: var(--surface); color: var(--ink) }
+.btn:hover { border-color: var(--maze) }
+.btn:focus-visible { outline: 2px solid var(--maze) }
+.sample-note { font: .72rem var(--mono); color: var(--muted) }
+
+.states { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px }
+.state { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px }
+.state canvas, .tbl canvas { display: block; background: var(--bar); border-radius: 6px }
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor }
+.chip { display: inline-flex; align-items: center; gap: 6px; font: 600 .74rem/1 var(--mono); letter-spacing: .04em; padding: 5px 8px; border-radius: 99px; width: fit-content; white-space: nowrap }
+.c-work { color: var(--chomp-edge); background: color-mix(in srgb, var(--chomp) 22%, transparent) }
+.c-need { color: var(--need); background: color-mix(in srgb, var(--need) 15%, transparent) }
+.c-done { color: var(--done); background: color-mix(in srgb, var(--done) 15%, transparent) }
+.c-idle { color: var(--muted); background: color-mix(in srgb, var(--idle) 15%, transparent) }
+.c-fail { color: var(--fail); background: color-mix(in srgb, var(--fail) 15%, transparent) }
+.state p { font-size: .92rem }
+.state .term { font: .78rem/1.45 var(--mono); color: var(--muted); border-top: 1px dashed var(--line); padding-top: 8px }
+
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface) }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; min-width: 640px }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line) }
+th { font: 600 .72rem/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--sunk) }
+tr:last-child td { border-bottom: 0 }
+.v { font: 600 .7rem/1 var(--mono); padding: 3px 6px; border-radius: 4px; white-space: nowrap }
+.v-ok { color: var(--done); background: color-mix(in srgb, var(--done) 14%, transparent) }
+.v-doc { color: var(--maze); background: color-mix(in srgb, var(--maze) 14%, transparent) }
+.v-todo { color: var(--need); background: color-mix(in srgb, var(--need) 14%, transparent) }
+.v-no { color: var(--fail); background: color-mix(in srgb, var(--fail) 14%, transparent) }
+
+.code { position: relative; background: var(--sunk); border: 1px solid var(--line); border-radius: 10px; overflow: hidden }
+.code pre { margin: 0; padding: 16px; overflow-x: auto; font-size: .8rem; line-height: 1.55 }
+.code .copy { position: absolute; top: 6px; right: 8px }
+.code .cap { font: .72rem var(--mono); color: var(--muted); padding: 10px 110px 10px 16px; border-bottom: 1px solid var(--line) }
+
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; counter-reset: r }
+.rule { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 16px 16px 52px; position: relative; counter-increment: r }
+.rule::before { content: counter(r); position: absolute; left: 16px; top: 15px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--chomp); color: #14172e; font: 800 .8rem/24px var(--display); text-align: center }
+.rule h3 { margin-bottom: 4px }
+.rule p { font-size: .92rem; color: var(--muted) }
+
+.callout { border-left: 3px solid var(--need); background: color-mix(in srgb, var(--need) 9%, var(--surface)); padding: 14px 16px; border-radius: 0 8px 8px 0; font-size: .95rem; display: flex; flex-direction: column; gap: 8px }
+.callout.ok { border-color: var(--done); background: color-mix(in srgb, var(--done) 9%, var(--surface)) }
+.callout.info { border-color: var(--maze); background: color-mix(in srgb, var(--maze) 8%, var(--surface)) }
+
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px }
+.metric { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px }
+.metric b { display: block; font: 800 1.5rem/1.1 var(--display) }
+.metric span { font-size: .88rem; color: var(--muted) }
+
+.phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px }
+.phase { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px }
+.phase ul { margin: 0; padding-left: 18px; font-size: .9rem }
+.phase .eyebrow { color: var(--muted) }
+.gate { border: 2px solid var(--maze); background: color-mix(in srgb, var(--maze) 7%, var(--surface)) }
+ul.tight { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px }
+ol.tight { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px }
+
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; overflow-x: auto }
+.diagram svg { display: block; min-width: 760px; width: 100%; height: auto }
+.diagram .box { fill: var(--sunk); stroke: var(--line) }
+.diagram .box.key { fill: color-mix(in srgb, var(--maze) 12%, var(--surface)); stroke: var(--maze) }
+.diagram .box.check { fill: color-mix(in srgb, var(--done) 10%, var(--surface)); stroke: var(--done) }
+.diagram text { fill: var(--ink); font: 13px var(--body) }
+.diagram text.s { fill: var(--muted); font: 11px var(--mono) }
+.diagram path { stroke: var(--muted); fill: none; stroke-width: 1.4 }
+.diagram path.dash { stroke-dasharray: 4 4 }
+.diagram .arrow { fill: var(--muted) }
+
+.getgoing { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start }
+.steps { counter-reset: st; display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none }
+.steps li { counter-increment: st; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: start }
+.steps li::before { content: counter(st); width: 30px; height: 30px; border-radius: 50%; background: var(--chomp); color: #14172e; font: 800 .95rem/30px var(--display); text-align: center }
+.steps b { display: block }
+.steps span { color: var(--muted); font-size: .92rem }
+.welcome { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 16px; font: 13px/1.4 var(--native); color: var(--bar-ink); display: flex; flex-direction: column; gap: 10px }
+.welcome h4 { margin: 0; font: 600 15px/1.25 var(--native) }
+.welcome .ok { display: flex; gap: 8px; align-items: baseline; color: var(--bar-ink) }
+.welcome .ok::before { content: "✓"; color: var(--done); font-weight: 700 }
+.welcome label { display: flex; gap: 8px; align-items: center }
+.welcome .btn { align-self: flex-end; background: var(--maze); color: #fff; border-color: transparent }
+.welcome .fine { font-size: 11px; color: var(--bar-sub) }
+@media (max-width: 820px) { .getgoing { grid-template-columns: minmax(0, 1fr) } }
+
+@media (max-width: 820px) {
+  .stage-body { grid-template-columns: minmax(0, 1fr) }
+  .panel { grid-column: 1; grid-row: 1 }
+  .sim { grid-row: 2 }
+}
+@media (max-width: 520px) { .menubar .left span, #clock { display: none } }
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <span class="eyebrow">Internal tool · source of truth · spec v1.0</span>
+  <h1>1UP</h1>
+  <p class="lede">In the arcade, 1UP flashes when it's your turn. This 1UP tells you when a Claude Code session needs you, without leaving what you're doing. While any session works, your arcade scene plays: dots get eaten, invaders march, barrels roll. An orange enemy means a session is waiting on you, and a green prize means a turn ended. Pick from five classic cabinets.</p>
+  <div class="meta"><span>macOS 14+</span><span>Installs in under a minute</span><span>Works with the Claude Code you already run</span><span>Nothing to configure</span><span>Nothing about your sessions leaves your Mac</span></div>
+
+  <div class="stage" aria-label="Interactive preview of the menu bar item and its panel">
+    <div class="menubar">
+      <div class="left"><b>Code</b><span>File</span><span>Edit</span><span>View</span><span>Terminal</span></div>
+      <button class="item-btn" id="itemBtn" aria-expanded="true" aria-controls="panel" aria-label="1UP"><canvas id="barIcon" data-w="140" data-h="22"></canvas></button>
+      <span id="clock">Thu 8 Oct 3:41 PM</span>
+    </div>
+    <div class="stage-body">
+      <div class="panel" id="panel" role="menu"></div>
+      <div class="sim">
+        <h3>Try it</h3>
+        <div class="theme-pick" role="group" aria-label="Theme" id="themePick"></div>
+        <p>Pick a theme, then change each sample session's state and watch the menu bar. The Needs-you icon turns from orange to red once a session has waited 2 minutes (the sample one gets there about 20 s after the page loads). Clicking a Done row marks it looked at, so it becomes Idle.</p>
+        <div class="sim-list" id="simList"></div>
+        <div class="sim-actions">
+          <button class="btn" id="addBtn">Add a session</button>
+          <button class="btn" id="faultBtn">Simulate a problem</button>
+        </div>
+        <span class="sample-note">Sample sessions, not live data.</span>
+      </div>
+    </div>
+  </div>
+  <nav class="toc" aria-label="Sections"><a href="#setup">Get going</a><a href="#states">States</a><a href="#panel-spec">Panel</a><a href="#themes">Themes</a><span class="muted">·</span><a href="#start">Start here</a><a href="#problem">Problem</a><a href="#source">Source of truth</a><a href="#trust">Trust rules</a><a href="#menubar">Menu bar</a><a href="#code">Code &amp; distribution</a><a href="#ui-ref">UI reference</a><a href="#plan">Plan</a><a href="#decisions">Decisions</a><a href="#rollout">Risks</a><a href="#arch">Appendix</a></nav>
+</header>
+<section id="setup">
+  <span class="eyebrow">Get going</span>
+  <h2>Three steps, nothing to configure</h2>
+  <div class="getgoing">
+    <div class="stack">
+      <ol class="steps">
+        <li><div><b>Get 1UP</b><span>Download <code>1UP.dmg</code> from the repo's Releases page. The link goes here when the first signed build ships.</span></div></li>
+        <li><div><b>Open it</b><span>Your arcade scene appears in the menu bar. If you opened it from the disk image or Downloads, 1UP offers to move itself to Applications so it can start at login.</span></div></li>
+        <li><div><b>Click Got it</b><span>That's the whole setup. Sessions you already have open show up straight away, and 1UP asks for no permissions.</span></div></li>
+      </ol>
+      <p>You don't sign in, add an API key, restart Claude Code, add hooks, edit settings or open a terminal. 1UP reads the status Claude Code already keeps for every session (version 2.1.261 or later). It finds every session and config folder by itself, however Claude Code was installed, including <code>npm run work</code> worktrees.</p>
+      <h3>Settings: two choices</h3>
+      <ul class="tight">
+        <li>Open at login (on)</li>
+        <li>Theme: Chomp, Invaders, Kong, Galaxy or Blocks, each shown as a live tile. Also in the menu bar icon's right-click menu.</li>
+      </ul>
+      <p class="muted">If something looks wrong, <b>Check my setup</b> (in Settings and the "?" panel) checks the few things 1UP depends on and says plainly what's wrong. Updates install with one click. To uninstall, quit 1UP and move it to the Trash.</p>
+    </div>
+    <div class="welcome" aria-label="Welcome card mockup">
+      <h4>1UP is watching 6 Claude Code sessions</h4>
+      <span class="ok">Found 6 sessions</span>
+      <span class="ok">Every session read correctly</span>
+      <span class="fine">Opens at login. Change it in Settings.</span>
+      <span class="fine">Can't see the icon? ⌘-drag it left in the menu bar.</span>
+      <span class="fine">The scene plays while sessions work. An orange icon means one needs you, a green one means a turn ended. Click the icon to see which session and where it's running.</span>
+      <button class="btn">Got it</button>
+    </div>
+  </div>
+</section>
+
+<section id="states">
+  <span class="eyebrow">States</span>
+  <h2>Three that matter, two that stay quiet</h2>
+  <p class="col">Every session is in exactly one state, and each one matches what its terminal shows.</p>
+  <div class="states">
+    <div class="state"><span class="chip c-need">NEEDS YOU</span><canvas data-demo="need" data-w="140" data-h="28"></canvas>
+      <p>Claude has stopped and is waiting for you: a permission prompt, a question, a sandbox or worker request, a proposed goal, or a dialog left open. The theme's Needs-you icon (ghost, crab invader, fireball, bee or T-piece) appears with a count. It's orange when the session just started waiting and red once it has waited 2 minutes.</p>
+      <div class="term">Terminal: "Do you want to proceed?" or a question with options</div></div>
+    <div class="state"><span class="chip c-done">DONE</span><canvas data-demo="done" data-w="140" data-h="28"></canvas>
+      <p>A turn ended and you haven't looked yet. That covers finished, interrupted and errored turns. The check means "look at this", not "it worked".</p>
+      <div class="term">Terminal: answer, "Interrupted" or an error, then an empty prompt</div></div>
+    <div class="state"><span class="chip c-work">WORKING</span><canvas data-demo="work" data-w="140" data-h="28"></canvas>
+      <p>Claude is thinking, writing, or running a command in the foreground. The theme's working scene animates.</p>
+      <div class="term">Terminal: spinner and "esc to interrupt"</div></div>
+    <div class="state"><span class="chip c-idle">IDLE</span><canvas data-demo="idle" data-w="140" data-h="28"></canvas>
+      <p>At the prompt with nothing new. That includes sessions you've already looked at and sessions with only a leftover background shell running.</p>
+      <div class="term">Terminal: empty prompt</div></div>
+    <div class="state"><span class="chip c-fail">CAN'T TELL</span><canvas data-demo="err" data-w="140" data-h="28"></canvas>
+      <p>1UP can't read status. The menu bar shows "?" instead of counts and the panel says why. It never shows Done in this state.</p>
+      <div class="term">Panel: the reason, Retry and Check my setup…</div></div>
+  </div>
+</section>
+
+<section id="panel-spec">
+  <span class="eyebrow">Panel</span>
+  <h2>Every session, by state</h2>
+  <p class="col">Click the menu bar icon to see which session is in which state. 1UP tells you; you switch to the terminal yourself.</p>
+  <div class="col stack">
+    <ul class="tight">
+      <li><b>Order:</b> Needs you (longest waiting first), Done (oldest first), Working, then Idle, collapsed to one line.</li>
+      <li><b>Title:</b> your <code>/rename</code> name (from the transcript's <code>custom-title</code>, or the status file's <code>name</code> when its <code>nameSource</code> is "user"), or else the title Claude Code generates for every session, or else the folder name. When two live rows would show the same title, both get #1, #2 in start order.</li>
+      <li><b>Second line:</b> the state in plain words, then the folder and the app it runs in. For example "Wants approval · quiz-matrix · VS Code", "Asked a question · history · iTerm2", "Ended · ran 14m · pages-bg · VS Code", "Interrupted · ran 3m · leveler · Terminal".</li>
+      <li><b>Right column:</b> how long it has been in that state.</li>
+      <li><b>Worktrees read cleanly:</b> <code>work-pages-bg</code> shows as <code>pages-bg</code>.</li>
+      <li><b>Done clears</b> when you click its row, when you send that session a new prompt, or with Mark all looked at. Opening the panel alone clears nothing.</li>
+    </ul>
+  </div>
+</section>
+
+
+<section id="themes">
+  <span class="eyebrow">Themes</span>
+  <h2>Pick your arcade</h2>
+  <p class="col">Five classic arcade games, one set of rules. Working is always the moving scene with a count. Needs you is always orange, turning red after 2 minutes. Done is always green, and Idle is the same scene, still and in the menu bar's own colour. Every scene is the same width and every icon the same size, so switching themes never moves anything. Pick one in Settings, or right-click the menu bar icon.</p>
+  <div class="themes">
+    <div class="theme-card">
+      <canvas class="screen" data-screen="chomp" data-w="200" data-h="44" aria-label="Chomp working animation"></canvas>
+      <header><h3>Chomp</h3><span class="insp">after Pac-Man</span></header>
+      <div class="theme-states">
+        <canvas data-theme="chomp" data-demo="work3" data-w="100" data-h="22"></canvas><span>Working</span>
+        <canvas data-theme="chomp" data-demo="need" data-w="100" data-h="22"></canvas><span>Needs you</span>
+        <canvas data-theme="chomp" data-demo="needOld" data-w="100" data-h="22"></canvas><span>2 min+</span>
+        <canvas data-theme="chomp" data-demo="done" data-w="100" data-h="22"></canvas><span>Done</span>
+        <canvas data-theme="chomp" data-demo="idle" data-w="100" data-h="22"></canvas><span>Idle</span>
+      </div>
+      <p>Pac-Man munches a row of dots. Needs you: ghost. Done: check mark.</p>
+      <button class="use-theme" data-use-theme="chomp">Use this theme</button>
+    </div>
+    <div class="theme-card">
+      <canvas class="screen" data-screen="invaders" data-w="200" data-h="44" aria-label="Invaders working animation"></canvas>
+      <header><h3>Invaders</h3><span class="insp">after Space Invaders</span></header>
+      <div class="theme-states">
+        <canvas data-theme="invaders" data-demo="work3" data-w="100" data-h="22"></canvas><span>Working</span>
+        <canvas data-theme="invaders" data-demo="need" data-w="100" data-h="22"></canvas><span>Needs you</span>
+        <canvas data-theme="invaders" data-demo="needOld" data-w="100" data-h="22"></canvas><span>2 min+</span>
+        <canvas data-theme="invaders" data-demo="done" data-w="100" data-h="22"></canvas><span>Done</span>
+        <canvas data-theme="invaders" data-demo="idle" data-w="100" data-h="22"></canvas><span>Idle</span>
+      </div>
+      <p>A row of invaders marches while your cannon fires. Needs you: crab invader. Done: laser cannon.</p>
+      <button class="use-theme" data-use-theme="invaders">Use this theme</button>
+    </div>
+    <div class="theme-card">
+      <canvas class="screen" data-screen="kong" data-w="200" data-h="44" aria-label="Kong working animation"></canvas>
+      <header><h3>Kong</h3><span class="insp">after Donkey Kong</span></header>
+      <div class="theme-states">
+        <canvas data-theme="kong" data-demo="work3" data-w="100" data-h="22"></canvas><span>Working</span>
+        <canvas data-theme="kong" data-demo="need" data-w="100" data-h="22"></canvas><span>Needs you</span>
+        <canvas data-theme="kong" data-demo="needOld" data-w="100" data-h="22"></canvas><span>2 min+</span>
+        <canvas data-theme="kong" data-demo="done" data-w="100" data-h="22"></canvas><span>Done</span>
+        <canvas data-theme="kong" data-demo="idle" data-w="100" data-h="22"></canvas><span>Idle</span>
+      </div>
+      <p>Kong beats his chest and rolls barrels down the girder. Needs you: fireball. Done: hammer.</p>
+      <button class="use-theme" data-use-theme="kong">Use this theme</button>
+    </div>
+    <div class="theme-card">
+      <canvas class="screen" data-screen="galaxy" data-w="200" data-h="44" aria-label="Galaxy working animation"></canvas>
+      <header><h3>Galaxy</h3><span class="insp">after Galaga</span></header>
+      <div class="theme-states">
+        <canvas data-theme="galaxy" data-demo="work3" data-w="100" data-h="22"></canvas><span>Working</span>
+        <canvas data-theme="galaxy" data-demo="need" data-w="100" data-h="22"></canvas><span>Needs you</span>
+        <canvas data-theme="galaxy" data-demo="needOld" data-w="100" data-h="22"></canvas><span>2 min+</span>
+        <canvas data-theme="galaxy" data-demo="done" data-w="100" data-h="22"></canvas><span>Done</span>
+        <canvas data-theme="galaxy" data-demo="idle" data-w="100" data-h="22"></canvas><span>Idle</span>
+      </div>
+      <p>Your fighter fires at a bee swooping in. Needs you: bee. Done: stage flag.</p>
+      <button class="use-theme" data-use-theme="galaxy">Use this theme</button>
+    </div>
+    <div class="theme-card">
+      <canvas class="screen" data-screen="blocks" data-w="200" data-h="44" aria-label="Blocks working animation"></canvas>
+      <header><h3>Blocks</h3><span class="insp">after Tetris</span></header>
+      <div class="theme-states">
+        <canvas data-theme="blocks" data-demo="work3" data-w="100" data-h="22"></canvas><span>Working</span>
+        <canvas data-theme="blocks" data-demo="need" data-w="100" data-h="22"></canvas><span>Needs you</span>
+        <canvas data-theme="blocks" data-demo="needOld" data-w="100" data-h="22"></canvas><span>2 min+</span>
+        <canvas data-theme="blocks" data-demo="done" data-w="100" data-h="22"></canvas><span>Done</span>
+        <canvas data-theme="blocks" data-demo="idle" data-w="100" data-h="22"></canvas><span>Idle</span>
+      </div>
+      <p>A T-piece drops into the gap and clears the line. Needs you: T-piece. Done: full block.</p>
+      <button class="use-theme" data-use-theme="blocks">Use this theme</button>
+    </div>
+  </div>
+</section>
+
+<div class="appendix-mark" id="builders">For builders and reviewers</div>
+
+<section id="start" style="border-top:0;padding-top:8px">
+  <span class="eyebrow">Start here</span>
+  <h2>Handing this to a developer, or to Claude Code</h2>
+  <ul class="tight col">
+    <li><b>This page is the source of truth.</b> The first commit copies it into the repo as <code>docs/SPEC.md</code>, and the live preview here stays the visual reference. Any change to behaviour updates the spec in the same PR.</li>
+    <li><b>Core first.</b> v1 does one thing: it tells you, accurately, which sessions need you, which finished and which are still working. Anything that could misfire (switching tabs, approving, controlling other apps) is out of v1.</li>
+    <li><b>v1 scope:</b>
+      <div class="tbl" style="margin-top:8px"><table><thead><tr><th>In v1</th><th>Later, each behind its own test</th></tr></thead><tbody>
+        <tr><td>Accurate state for every Claude Code session: Working, Needs you, Done, Idle, "?"</td><td>Alerts (needs a permission prompt and grouping rules)</td></tr>
+        <tr><td>Menu bar item and panel: which session, which state, where it runs</td><td>Keyboard shortcut, previews of the question or last reply</td></tr>
+        <tr><td>Five themes, loaded from theme folders</td><td>Your own themes in a folder, more cabinets</td></tr>
+        <tr><td>Settings (open at login, theme), Check my setup, welcome card</td><td>Jumping to the session's tab, VS Code extension</td></tr>
+        <tr><td>Signed DMG with one-click updates</td><td>Homebrew, background agents</td></tr>
+        <tr><td>No macOS permissions of any kind</td><td>Never: approving from 1UP, controlling other apps</td></tr>
+      </tbody></table></div></li>
+    <li><b>Read in this order:</b> States → Panel → Themes → Source of truth → Trust rules → UI reference → Build reference → Milestones.</li>
+    <li><b>Pixel-exact art:</b> the sprite grids below are the ones this page draws. Paste them into <code>Themes/*.swift</code> unchanged.</li>
+  </ul>
+  <div class="code"><div class="cap">Kickoff prompt for Claude Code (paste into a new session in the empty repo)</div><button class="btn copy" data-copy="kickoff">Copy</button><pre id="kickoff">You&#x27;re building 1UP, a macOS menu bar app that shows the state of every Claude Code session on this Mac. The spec at docs/SPEC.md is the source of truth. Build exactly what it says, and if something is unclear or seems wrong, ask instead of guessing.
+
+M0 is done by a human. Start at M1 and work milestone by milestone (M1 → M5), one PR per milestone. Where the spec's live preview and its text disagree, the UI reference table wins. Each PR must:
+- meet that milestone&#x27;s &quot;Done when&quot; line,
+- add or update tests (OneUpCore is pure and fully tested with the fixtures in Tests/OneUpCoreTests/Fixtures),
+- include side-by-side screenshots against the spec&#x27;s preview for any UI change.
+
+First task in M1: write tools/capture-fixtures.sh and capture real status files and transcript tails from this Mac into Tests/OneUpCoreTests/Fixtures/&lt;version&gt;/. The app target is generated with XcodeGen (project.yml); OneUpCore and oneup-dump are SwiftPM. Read docs/SPEC.md sections &quot;Source of truth&quot;, &quot;Trust rules&quot;, &quot;UI reference&quot; and &quot;Build reference&quot; first. Then propose the file list and the reducer tests before writing code.</pre></div>
+  <div class="code"><div class="cap">CLAUDE.md for the repo</div><button class="btn copy" data-copy="claudemd">Copy</button><pre id="claudemd"># 1UP
+
+macOS menu bar app (Swift 6, macOS 14+) that shows Claude Code session states. docs/SPEC.md is the source of truth; behaviour changes update the spec in the same PR.
+
+## Commands
+- Generate the app project: `xcodegen` · Build core: `swift build` · Test: `swift test` · Format: `swift-format -i -r Sources Tests`
+- Run the core without UI: `swift run oneup-dump`
+
+## Rules
+- All state logic lives in OneUpCore (pure, synchronous, no AppKit). The app target only watches, draws and clicks.
+- Never guess a state. Unknown shapes become &quot;?&quot; plus a log line.
+- Every reducer rule and every VERIFIED test-matrix row has a fixture test with a matching name (SPIKE rows join once they pass).
+- Inside ~/.claude, read only `sessions/*.json` and the tail of each session&#x27;s top-level transcript. Never open .key files or sockets, never write inside ~/.claude.
+- No network except the Sparkle update check.
+- Themes are folders in Resources/Themes with no code. Layout, tints and counts belong to StatusItem.
+- v1 asks for no macOS permissions. Anything that would need one is out of scope.
+- Comments explain why, not what. No commented-out code.
+- One PR per milestone, with screenshots for UI changes.</pre></div>
+  <div class="code"><div class="cap">Sprite data, palettes and scene notes. '#' is the tint slot; '.' is transparent.</div><button class="btn copy" data-copy="sprites">Copy</button><pre id="sprites" style="max-height:220px">{
+ &quot;sprites&quot;: {
+  &quot;GHOST&quot;: [
+   &quot;.....####.....&quot;,
+   &quot;...########...&quot;,
+   &quot;..##########..&quot;,
+   &quot;.##ww####ww##.&quot;,
+   &quot;.#wwww##wwww#.&quot;,
+   &quot;.#wwbb##wwbb#.&quot;,
+   &quot;##wwbb##wwbb##&quot;,
+   &quot;###ww####ww###&quot;,
+   &quot;##############&quot;,
+   &quot;##############&quot;,
+   &quot;##############&quot;,
+   &quot;##############&quot;,
+   &quot;##.###..###.##&quot;,
+   &quot;#...##..##...#&quot;
+  ],
+  &quot;CHECK&quot;: [
+   &quot;..............&quot;,
+   &quot;..............&quot;,
+   &quot;............##&quot;,
+   &quot;...........###&quot;,
+   &quot;..........###.&quot;,
+   &quot;.........###..&quot;,
+   &quot;.##.....###...&quot;,
+   &quot;.###...###....&quot;,
+   &quot;..###.###.....&quot;,
+   &quot;...#####......&quot;,
+   &quot;....###.......&quot;,
+   &quot;.....#........&quot;,
+   &quot;..............&quot;,
+   &quot;..............&quot;
+  ],
+  &quot;CRAB&quot;: [
+   &quot;...#.....#...&quot;,
+   &quot;....#...#....&quot;,
+   &quot;...#######...&quot;,
+   &quot;..##.###.##..&quot;,
+   &quot;.###########.&quot;,
+   &quot;.#.#######.#.&quot;,
+   &quot;.#.#.....#.#.&quot;,
+   &quot;....##.##....&quot;
+  ],
+  &quot;CANNON&quot;: [
+   &quot;......#......&quot;,
+   &quot;.....###.....&quot;,
+   &quot;.....###.....&quot;,
+   &quot;.###########.&quot;,
+   &quot;#############&quot;,
+   &quot;#############&quot;,
+   &quot;#############&quot;,
+   &quot;#############&quot;
+  ],
+  &quot;SQUID1&quot;: [
+   &quot;...##...&quot;,
+   &quot;..####..&quot;,
+   &quot;.######.&quot;,
+   &quot;##.##.##&quot;,
+   &quot;########&quot;,
+   &quot;..#..#..&quot;,
+   &quot;.#.##.#.&quot;,
+   &quot;#.#..#.#&quot;
+  ],
+  &quot;SQUID2&quot;: [
+   &quot;...##...&quot;,
+   &quot;..####..&quot;,
+   &quot;.######.&quot;,
+   &quot;##.##.##&quot;,
+   &quot;########&quot;,
+   &quot;.#.##.#.&quot;,
+   &quot;#......#&quot;,
+   &quot;.#....#.&quot;
+  ],
+  &quot;GUN&quot;: [
+   &quot;....#....&quot;,
+   &quot;...###...&quot;,
+   &quot;.#######.&quot;,
+   &quot;#########&quot;,
+   &quot;#########&quot;
+  ],
+  &quot;KONG1&quot;: [
+   &quot;....bbbbbb....&quot;,
+   &quot;...bbbbbbbb...&quot;,
+   &quot;..bbffbbffbb..&quot;,
+   &quot;..bfwkffkwfb..&quot;,
+   &quot;..bffffffffb..&quot;,
+   &quot;...bfkkkkfb...&quot;,
+   &quot;.bbbbffffbbbb.&quot;,
+   &quot;bbbbbbbbbbbbbb&quot;,
+   &quot;bbb.bbbbbb.bbb&quot;,
+   &quot;bbb.bbbbbb.bbb&quot;,
+   &quot;bb..bbbbbb..bb&quot;,
+   &quot;....bb..bb....&quot;,
+   &quot;...bbb..bbb...&quot;,
+   &quot;..bbbb..bbbb..&quot;
+  ],
+  &quot;KONG2&quot;: [
+   &quot;bb..bbbbbb..bb&quot;,
+   &quot;bbbbbbbbbbbbbb&quot;,
+   &quot;.bbbffbbffbbb.&quot;,
+   &quot;..bfwkffkwfb..&quot;,
+   &quot;..bffffffffb..&quot;,
+   &quot;...bfkkkkfb...&quot;,
+   &quot;...bbffffbb...&quot;,
+   &quot;..bbbbbbbbbb..&quot;,
+   &quot;..bbbbbbbbbb..&quot;,
+   &quot;..bbbbbbbbbb..&quot;,
+   &quot;...bbbbbbbb...&quot;,
+   &quot;....bb..bb....&quot;,
+   &quot;...bbb..bbb...&quot;,
+   &quot;..bbbb..bbbb..&quot;
+  ],
+  &quot;BARREL1&quot;: [
+   &quot;.oooo.&quot;,
+   &quot;oddddo&quot;,
+   &quot;oooooo&quot;,
+   &quot;oooooo&quot;,
+   &quot;oddddo&quot;,
+   &quot;.oooo.&quot;
+  ],
+  &quot;BARREL2&quot;: [
+   &quot;.oooo.&quot;,
+   &quot;oooooo&quot;,
+   &quot;oddddo&quot;,
+   &quot;oddddo&quot;,
+   &quot;oooooo&quot;,
+   &quot;.oooo.&quot;
+  ],
+  &quot;FIRE&quot;: [
+   &quot;......#......&quot;,
+   &quot;.....##..#...&quot;,
+   &quot;..#..###.##..&quot;,
+   &quot;..##.######..&quot;,
+   &quot;.###########.&quot;,
+   &quot;.##yyyyyyy##.&quot;,
+   &quot;##ywkyyywky##&quot;,
+   &quot;##yyyyyyyyy##&quot;,
+   &quot;##yyyyyyyyy##&quot;,
+   &quot;.##yyyyyyy##.&quot;,
+   &quot;.###yyyyy###.&quot;,
+   &quot;..#########..&quot;,
+   &quot;....#####....&quot;
+  ],
+  &quot;HAMMER&quot;: [
+   &quot;.##########.&quot;,
+   &quot;.#dd####dd#.&quot;,
+   &quot;.##########.&quot;,
+   &quot;.....##.....&quot;,
+   &quot;.....##.....&quot;,
+   &quot;.....##.....&quot;,
+   &quot;.....##.....&quot;,
+   &quot;.....##.....&quot;,
+   &quot;.....##.....&quot;,
+   &quot;....####....&quot;,
+   &quot;....####....&quot;
+  ],
+  &quot;FIGHTER&quot;: [
+   &quot;.r............&quot;,
+   &quot;.rr...........&quot;,
+   &quot;..wwww........&quot;,
+   &quot;..wbbwww......&quot;,
+   &quot;.wwwwwwwww....&quot;,
+   &quot;wwwwwwwwwwwww.&quot;,
+   &quot;.wwwwwwwww....&quot;,
+   &quot;..wbbwww......&quot;,
+   &quot;..wwww........&quot;,
+   &quot;.rr...........&quot;,
+   &quot;.r............&quot;
+  ],
+  &quot;BEE&quot;: [
+   &quot;...#.....#...&quot;,
+   &quot;....#...#....&quot;,
+   &quot;.##.yyyyy.##.&quot;,
+   &quot;###yyyyyyy###&quot;,
+   &quot;###bbyyybb###&quot;,
+   &quot;.#.yybbbyy.#.&quot;,
+   &quot;...yyyyyyy...&quot;,
+   &quot;..##.yyy.##..&quot;,
+   &quot;.##...y...##.&quot;,
+   &quot;.#.........#.&quot;
+  ],
+  &quot;BEESM&quot;: [
+   &quot;.#.....#.&quot;,
+   &quot;..#yyy#..&quot;,
+   &quot;##yyyyy##&quot;,
+   &quot;##bbybb##&quot;,
+   &quot;.#yyyyy#.&quot;,
+   &quot;.#.y.y.#.&quot;,
+   &quot;#.......#&quot;
+  ],
+  &quot;FLAG&quot;: [
+   &quot;.##..........&quot;,
+   &quot;.####........&quot;,
+   &quot;.######......&quot;,
+   &quot;.########....&quot;,
+   &quot;.##########..&quot;,
+   &quot;.########....&quot;,
+   &quot;.######......&quot;,
+   &quot;.####........&quot;,
+   &quot;.##..........&quot;,
+   &quot;.##..........&quot;,
+   &quot;.##..........&quot;,
+   &quot;.##..........&quot;,
+   &quot;####.........&quot;
+  ],
+  &quot;PAC0&quot;: [
+   &quot;....#####....&quot;,
+   &quot;..#########..&quot;,
+   &quot;.###########.&quot;,
+   &quot;.###########.&quot;,
+   &quot;#############&quot;,
+   &quot;#############&quot;,
+   &quot;#############&quot;,
+   &quot;#############&quot;,
+   &quot;#############&quot;,
+   &quot;.###########.&quot;,
+   &quot;.###########.&quot;,
+   &quot;..#########..&quot;,
+   &quot;....#####....&quot;
+  ],
+  &quot;PAC1&quot;: [
+   &quot;....#####....&quot;,
+   &quot;..#########..&quot;,
+   &quot;.###########.&quot;,
+   &quot;.###########.&quot;,
+   &quot;###########..&quot;,
+   &quot;#########....&quot;,
+   &quot;#######......&quot;,
+   &quot;#########....&quot;,
+   &quot;###########..&quot;,
+   &quot;.###########.&quot;,
+   &quot;.###########.&quot;,
+   &quot;..#########..&quot;,
+   &quot;....#####....&quot;
+  ],
+  &quot;PAC2&quot;: [
+   &quot;....#####....&quot;,
+   &quot;..#########..&quot;,
+   &quot;.##########..&quot;,
+   &quot;.########....&quot;,
+   &quot;#######......&quot;,
+   &quot;######.......&quot;,
+   &quot;#####........&quot;,
+   &quot;######.......&quot;,
+   &quot;#######......&quot;,
+   &quot;.########....&quot;,
+   &quot;.##########..&quot;,
+   &quot;..#########..&quot;,
+   &quot;....#####....&quot;
+  ]
+ },
+ &quot;palettes&quot;: {
+  &quot;fixed&quot;: {
+   &quot;w&quot;: &quot;#ffffff&quot;,
+   &quot;b&quot;: &quot;#2121de&quot;,
+   &quot;k&quot;: &quot;#14172e&quot;,
+   &quot;y&quot;: &quot;#ffd21f&quot;,
+   &quot;f&quot;: &quot;#f2b26b&quot;,
+   &quot;o&quot;: &quot;#c8641e&quot;,
+   &quot;d&quot;: &quot;#5c2d0c&quot;,
+   &quot;r&quot;: &quot;#e5484d&quot;
+  },
+  &quot;KONG1/KONG2&quot;: {
+   &quot;b&quot;: &quot;#8b4a1c&quot;,
+   &quot;f&quot;: &quot;#f2b26b&quot;,
+   &quot;w&quot;: &quot;#ffffff&quot;,
+   &quot;k&quot;: &quot;#2a1206&quot;
+  },
+  &quot;FIGHTER&quot;: {
+   &quot;w&quot;: &quot;menu bar text colour&quot;,
+   &quot;r&quot;: &quot;#e5484d&quot;,
+   &quot;b&quot;: &quot;#3d5afe&quot;
+  },
+  &quot;BEESM (scene)&quot;: {
+   &quot;#&quot;: &quot;#3d5afe&quot;,
+   &quot;y&quot;: &quot;#ffd21f&quot;,
+   &quot;b&quot;: &quot;#2121de&quot;
+  },
+  &quot;HAMMER&quot;: {
+   &quot;#&quot;: &quot;done tint&quot;,
+   &quot;d&quot;: &quot;rgba(0,0,0,0.35)&quot;
+  },
+  &quot;SQUID1/SQUID2/GUN (scene)&quot;: &quot;menu bar text colour&quot;,
+  &quot;PAC0/PAC1/PAC2&quot;: &quot;#e9b800 light, #ffd21f dark&quot;
+ },
+ &quot;tints&quot;: {
+  &quot;light&quot;: {
+   &quot;need&quot;: &quot;#e2680a&quot;,
+   &quot;needWaited&quot;: &quot;#d8261c&quot;,
+   &quot;done&quot;: &quot;#1c9353&quot;
+  },
+  &quot;dark&quot;: {
+   &quot;need&quot;: &quot;#ff9a3d&quot;,
+   &quot;needWaited&quot;: &quot;#ff4a3d&quot;,
+   &quot;done&quot;: &quot;#3fd184&quot;
+  }
+ },
+ &quot;drawnInCode&quot;: {
+  &quot;chomp dots&quot;: &quot;2x2 at x = L+17+i*8, scrolling 2 px per frame; PAC frames cycle 2,1,0,1&quot;,
+  &quot;kong girder&quot;: &quot;#e5484d bar 2 px tall at cy+5 from L+15 to L+44, rivets #ffb3b3 every 4 px&quot;,
+  &quot;galaxy shots&quot;: &quot;#f0a500 3x1 dashes&quot;,
+  &quot;blocks&quot;: &quot;4 px cells (3 px block + bevel), tetromino colours I #00c8e0 O #f0c800 T #a43ff0 S #20b850 Z #e5322d J #2f5bf0 L #f08a00; need = T piece, done = 3x3 square, both tinted&quot;,
+  &quot;reference&quot;: &quot;the inline script of this page (THEMES object) is the reference implementation of every scene&quot;
+ }
+}</pre></div>
+</section>
+
+<section id="problem">
+  <span class="eyebrow">Problem</span>
+  <h2>Sessions wait on you and you don't know</h2>
+  <div class="col stack">
+    <p>We each run four to eight Claude Code sessions across terminal tabs and editor windows. A session that stops to ask a question or wait for approval sits there until someone happens to check its tab. Finished work waits too. We find out by cycling through tabs, which breaks whatever we were focused on.</p>
+    <p>1UP puts one honest answer in the menu bar: does anything need me, and has anything finished? Success looks like this:</p>
+  </div>
+  <div class="metrics">
+    <div class="metric"><b>&lt; 60 s</b><span>Median time from "needs you" to answered. Measured during the pilot from 1UP's own local log.</span></div>
+    <div class="metric"><b>0</b><span>Wrong-state periods longer than 2 s in the release test run.</span></div>
+    <div class="metric"><b>4 of 5</b><span>Pilot teammates still running it after two weeks.</span></div>
+    <div class="metric"><b>0</b><span>Wrong states reported in <code>#1up</code> during the pilot's second week.</span></div>
+  </div>
+  <h3>What already exists</h3>
+  <p class="col">Several Claude Code menu bar monitors already exist. The spike starts by trying the two closest for a day each. If one passes our gate, we adopt it instead of building.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Option</th><th>How it works</th><th>Where 1UP differs</th></tr></thead>
+    <tbody>
+      <tr><td>Claude Code's own notifications and <code>claude agents</code></td><td>A ping in the terminal, and a list view inside a terminal</td><td>A glanceable count from anywhere. The agent view also calls a session busy while only a leftover background shell runs.</td></tr>
+      <tr><td><a href="https://github.com/m1ckc3s/claude-status-bar">Claude Status Bar</a> (open source)</td><td>Installs Claude Code hooks. Animated icon while working, a dot when permission is needed.</td><td>No hooks or settings edits. Open sessions show up right away instead of after their next action, and interrupted turns are caught, which the end-of-turn hook misses.</td></tr>
+      <tr><td><a href="https://www.producthunt.com/products/glint-9/makers">Glint</a></td><td>Reads local session logs. Shows status, current tool, tokens and subagents.</td><td>No licence check over the network, no setup, and a test gate the team owns</td></tr>
+      <tr><td><a href="https://github.com/sj719045032/claude-statistics">Claude Statistics</a>, Coucou</td><td>Live status, with approve or deny from the card or the notch</td><td>1UP never approves outside the terminal, by design.</td></tr>
+      <tr><td>MenubarCC</td><td>A pixel-art crab per session</td><td>Five arcade themes on one fixed layout</td></tr>
+      <tr><td>A SwiftBar plugin around the watcher script</td><td>Counts and a list in an afternoon</td><td>The fallback if the spike fails</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="source">
+  <span class="eyebrow">Source of truth</span>
+  <h2>Read what Claude Code writes about itself</h2>
+  <div class="col stack">
+    <p>Every running Claude Code session keeps a small status file at <code>~/.claude/sessions/&lt;pid&gt;.json</code>. Claude Code rewrites it whenever the status or the waiting reason changes, and stamps the time in <code>statusUpdatedAt</code>. It is also rewritten on renames and bookkeeping, when only <code>updatedAt</code> moves. Claude Code's own <code>claude agents</code> command reads these same files.</p>
+    <p>1UP watches that folder and reads a file only when it changes. Done comes from the session's transcript, where Claude Code writes a <code>turn_duration</code> record at the end of every turn. Nothing else is read and nothing is polled every second.</p>
+  </div>
+  <div class="callout">
+    <b>Why not use <code>claude agents --json</code> alone? It calls a finished turn "busy".</b>
+    <span>Two sessions reported <code>busy</code> for more than 24 hours. Both terminals were at an empty prompt. Each turn had ended, but a background shell the turn started was still running (a <code>wc -l</code> stuck on a socket, and a <code>npm run work logs | tail</code> that never exits). The status file says <code>shell</code> for exactly this case. The JSON output folds it into <code>busy</code>, and the agent view shows both as working. Using the JSON alone, 1UP would show Working forever and never show those turns as Done.</span>
+  </div>
+  <h3>How Claude Code's status becomes a 1UP state</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Status file says</th><th>1UP shows</th><th>Panel line</th><th>Basis</th></tr></thead>
+    <tbody>
+      <tr><td><code>busy</code></td><td><span class="chip c-work">WORKING</span></td><td>Working</td><td><span class="v v-ok">VERIFIED</span></td></tr>
+      <tr><td><code>waiting</code> + <code>permission prompt</code></td><td><span class="chip c-need">NEEDS YOU</span></td><td>Wants approval</td><td><span class="v v-doc">DOCUMENTED</span></td></tr>
+      <tr><td><code>waiting</code> + <code>input needed</code></td><td><span class="chip c-need">NEEDS YOU</span></td><td>Asked a question</td><td><span class="v v-doc">DOCUMENTED</span></td></tr>
+      <tr><td><code>waiting</code> + <code>sandbox request</code> / <code>worker request</code> / <code>goal proposal</code></td><td><span class="chip c-need">NEEDS YOU</span></td><td>Wants sandbox access / Worker needs approval / Proposed a goal</td><td><span class="v v-ok">VERIFIED</span> in 2.1.295</td></tr>
+      <tr><td><code>waiting</code> + <code>dialog open</code></td><td><span class="chip c-need">NEEDS YOU</span></td><td>A dialog is open</td><td><span class="v v-doc">DOCUMENTED</span> as waiting on you</td></tr>
+      <tr><td><code>waiting</code> + any other reason</td><td><span class="chip c-need">NEEDS YOU</span></td><td>Waiting: &lt;raw reason&gt;</td><td>Safe default</td></tr>
+      <tr><td><code>idle</code> or <code>shell</code>, and the transcript's latest <code>turn_duration</code> is later than when you last looked</td><td><span class="chip c-done">DONE</span></td><td>Ended · ran 11m</td><td><span class="v v-ok">VERIFIED</span> 493 of 518 turns, every version 2.1.261–2.1.295</td></tr>
+      <tr><td>Was <code>busy</code> or a Needs-you <code>waiting</code> (not dialog), now <code>idle</code>/<code>shell</code>, and no new <code>turn_duration</code> within 1.5 s</td><td><span class="chip c-done">DONE</span></td><td>Interrupted · ran 3m</td><td><span class="v v-ok">VERIFIED</span> interrupts skip the record (3 of 4)</td></tr>
+      <tr><td><code>idle</code> or <code>shell</code>, already looked at</td><td><span class="chip c-idle">IDLE</span></td><td>Idle, or Idle · background shell running</td><td><span class="v v-ok">VERIFIED</span></td></tr>
+      <tr><td>Process gone</td><td>Row removed</td><td>None</td><td><span class="v v-ok">VERIFIED</span></td></tr>
+      <tr><td>Unknown status, missing field, unreadable file</td><td>That row only: <b>?</b> with the raw value</td><td>Unrecognised status "xyz"</td><td>Safe default</td></tr>
+    </tbody>
+  </table></div>
+  <p class="col muted">The status file is internal to Claude Code and has no documented contract. That's the cost of matching the terminal exactly. 1UP checks the file's shape on every read, pins the format with fixture tests per Claude Code version, and falls back to "can't tell" rather than guessing. Done is the only state 1UP works out itself, and it needs a real turn. The primary signal is a <code>turn_duration</code> record in the transcript that is newer than when you last looked. Interrupted turns usually skip that record, so a second rule covers them: the saved previous status was <code>busy</code> or a Needs-you <code>waiting</code>, and no record arrives within 1.5 s. A turn Claude starts by itself when a background task finishes is a real turn, so it ends in Done too. A background shell exiting, a dialog closing, or a brand-new session never creates Done. "Last looked at" is saved to disk, so a 1UP restart loses nothing.</p>
+</section>
+
+<section id="trust">
+  <span class="eyebrow">Trust rules</span>
+  <h2>Rules that keep it honest</h2>
+  <div class="rules">
+    <div class="rule"><h3>Claude Code decides the state</h3><p>Only the status Claude Code writes decides a row's state. Nothing is inferred from CPU, time or output.</p></div>
+    <div class="rule"><h3>Never upgrade a doubt</h3><p>Anything ambiguous shows its raw value or "?". A failed or stale read can never create a Done.</p></div>
+    <div class="rule"><h3>Fresh, or it says so</h3><p>Every 5 s 1UP lists the folder and checks each file's modified time, which catches anything a file event missed. If the folder can't be read for 20 s, the whole icon turns into "?". There is no in-between state.</p></div>
+    <div class="rule"><h3>No rows for dead sessions</h3><p>A file counts only if its process is alive and started at the file's <code>procStart</code> (±1 s, both in UTC). That rules out stale files whose pid was reused. The process name isn't checked, because an npm install of Claude Code runs as <code>node</code>.</p></div>
+    <div class="rule"><h3>Every config folder</h3><p>Each 5 s scan reads <code>CLAUDE_CONFIG_DIR</code> from the user's Claude Code processes and watches <code>&lt;folder&gt;/sessions</code> for every distinct folder, plus <code>~/.claude</code>. Sessions started with a different config folder still show up, with no setting to change.</p></div>
+    <div class="rule"><h3>Every visible session</h3><p>Every interactive session in your <code>~/.claude</code> is listed, whatever terminal or editor it runs in. Nothing can be hidden in v1.</p></div>
+    <div class="rule"><h3>Survives restarts</h3><p>"Last looked at" is saved per session. Quitting, updating or crashing 1UP loses nothing. A half-written file is retried three times within 150 ms before its row shows "?".</p></div>
+    
+    <div class="rule"><h3>A "?" never hides a waiting session</h3><p>A row stuck on "?" for 20 s counts under Needs you and sorts to the top, so a session whose file changed shape can't silently wait on you.</p></div>
+    <div class="rule"><h3>Proven before release</h3><p>Every release passes the test matrix (Appendix B), run by hand on two Macs, one of them using VS Code.</p></div>
+  </div>
+</section>
+
+<section id="menubar">
+  <span class="eyebrow">Design · menu bar item</span>
+  <h2>Read it in a glance</h2>
+  <div class="col stack">
+    <p>Scenes animate at 8 fps from pre-rendered frames and stop while the screen is locked. With macOS Reduce Motion on, the theme's <code>idleFrame</code> holds still, in colour. The working count always shows, so no state relies on motion alone, and every state also has its own shape for colour-blind teammates.</p>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Situation</th><th>Menu bar</th><th>What you do</th></tr></thead>
+    <tbody>
+      <tr><td>Nothing running</td><td><canvas data-demo="idle" data-w="140" data-h="28"></canvas></td><td>Nothing</td></tr>
+      <tr><td>3 sessions working</td><td><canvas data-demo="work3" data-w="140" data-h="28"></canvas></td><td>Keep working elsewhere</td></tr>
+      <tr><td>2 working, 1 needs you</td><td><canvas data-demo="mix1" data-w="140" data-h="28"></canvas></td><td>Click, then the Needs-you row</td></tr>
+      <tr><td>2 working, 2 need you, one for 3 minutes</td><td><canvas data-demo="mix3" data-w="140" data-h="28"></canvas></td><td>Red icon: it's been waiting. Go now.</td></tr>
+      <tr><td>All finished, 2 unseen</td><td><canvas data-demo="done" data-w="140" data-h="28"></canvas></td><td>Review when you're ready</td></tr>
+      <tr><td>1 working, 1 needs you, 3 done</td><td><canvas data-demo="mix2" data-w="140" data-h="28"></canvas></td><td>Answer the Needs-you row first</td></tr>
+      <tr><td>Status unreadable for 20 s</td><td><canvas data-demo="err" data-w="140" data-h="28"></canvas></td><td>Open the panel for the reason</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="code">
+  <span class="eyebrow">Code &amp; distribution</span>
+  <h2>Small, readable, and boring to maintain</h2>
+  <div class="col stack">
+    <p>1UP should stay small enough to read in one sitting. Target under 2,000 lines of Swift, one dependency (Sparkle for updates), and no background services. Clean code here means each file has one job, the decision logic has no side effects, and every rule in this spec has a test with the same name.</p>
+  </div>
+  <div class="code"><div class="cap">Repo layout · github.com/masterytrack/1up</div><pre>1up/
+  Package.swift                 OneUpCore library + oneup-dump executable
+  project.yml                   XcodeGen: the 1UP.app target (Info.plist, LSUIElement, entitlements, Sparkle)
+  Sources/OneUpCore/             pure logic, no AppKit, fully unit-tested
+    StatusFile.swift            decode + shape-check one sessions/*.json
+    SessionState.swift          the five states and the mapping table
+    Reducer.swift               (previous, status file, latest turn_duration, lastLookedAt) → state
+    RowTitle.swift              user name → custom-title → ai-title → folder, then #n on duplicates
+    TranscriptTail.swift        tail-reads titles and turn-end records only
+  Sources/OneUp/                 thin macOS shell around OneUpCore
+    SessionWatcher.swift        FSEvents + 5 s folder check + process-exit sources
+    StatusItem.swift            draws the active theme's frames + counts
+    ThemeLoader.swift           reads and validates theme folders
+    PanelView.swift             SwiftUI panel
+    Settings.swift, Welcome.swift, SetupCheck.swift
+  Resources/Themes/             one folder per theme, no code (see below)
+    chomp/ invaders/ kong/ galaxy/ blocks/
+  Tests/OneUpCoreTests/
+    Fixtures/&lt;version&gt;/       real status files and transcript snippets
+    ReducerTests.swift          one test per row of the mapping table and test matrix
+    ThemeTests.swift            every theme folder passes the theme rules
+  tools/capture-fixtures.sh     copies live status files and transcript tails into Fixtures
+  tools/render-themes.mjs       one-time export of the five built-in theme folders (output committed)
+  CLAUDE.md                     build and test commands, the rules below
+  .github/workflows/            test on every PR, release on tag</pre></div>
+  <p class="col">Code rules live in the repo's <code>CLAUDE.md</code> (see Start here). Release is one path: push a tag such as <code>v1.0.0</code> and CI builds, signs, notarises, staples, uploads the DMG and updates the Sparkle feed. Nobody signs on a laptop.</p>
+
+  <h3>Themes are folders, not code</h3>
+  <div class="col stack">
+    <p>A theme is a folder of small images and one JSON file. The app never has theme-specific code: it plays the frames, tints the two icons and draws the counts the same way for every theme. Adding a cabinet means adding a folder and nothing else.</p>
+  </div>
+  <div class="code"><div class="cap">Resources/Themes/invaders/</div><pre>theme.json          {"schema": 1, "id": "invaders", "name": "Invaders", "after": "Space Invaders"}
+scene.png           required · working frames left to right, each 44 × 16 px, 1–32 frames, loops
+scene-ink.png       optional · alpha mask, same size, drawn in the menu bar's text colour
+scene-dark.png      optional · replaces scene.png on a dark menu bar
+need.png            required · 14 × 14 alpha mask, filled with the Needs-you tint
+need-detail.png     optional · 14 × 14 RGBA, drawn untinted on top (eyes, faces)
+done.png            required · 14 × 14 alpha mask, filled with the Done tint
+done-detail.png     optional · 14 × 14 RGBA
+icon.png            required · 14 × 14 RGBA, used in the panel and the theme picker
+icon-ink.png        optional · 14 × 14 alpha mask drawn in the menu bar's text colour (white-on-dark sprites)</pre></div>
+  <div class="code"><div class="cap">theme.json schema</div><pre>{
+  "schema":    1,                      required
+  "id":        "invaders",             required · ^[a-z][a-z0-9-]{1,31}$ · equals the folder name
+  "name":      "Invaders",             required · 1–16 characters
+  "after":     "Space Invaders",       optional · shown under the name in the picker
+  "fps":       8,                      optional · 1–8, default 8 (ThemeTests still reject flashing above 4 Hz)
+  "idleFrame": 0                       optional · default 0, also used with Reduce Motion
+}</pre></div>
+  <ul class="tight col">
+    <li><b>Pixels:</b> every image is drawn at 1 px per point, scaled 2× with nearest-neighbour on Retina, so art stays crisp. Layers share the base image's size and origin and are drawn in this order: scene, ink, then for icons the tint mask and the detail. Masks use alpha only.</li>
+  </ul>
+  <ul class="tight col">
+    <li><b>The app owns meaning, the theme owns art.</b> Needs you is filled orange, then red after 2 minutes. Done is filled green. Idle is the <code>idleFrame</code> of the scene (default 0) drawn in the menu bar's own colour at 50%. A theme can't change any of that.</li>
+    <li><b>One layout for every theme:</b> 44 × 16 scene, 14 × 14 icons, counts placed by the app (see UI reference), so switching themes never moves anything.</li>
+    <li><b>Validated on load:</b> wrong sizes, 0 or more than 32 frames, missing required files, an <code>id</code> that differs from the folder, or an unreadable JSON skip that theme, log why, and fall back to Chomp. The menu bar never shows a broken theme.</li>
+    <li><b><code>ThemeTests</code> check every built-in folder:</b> sizes and frame counts, Needs-you and Done shapes that differ from each other and from the idle frame, scene art that doesn't use the exact tint colours, and nothing that flashes faster than 4 times a second.</li>
+    <li><b>Reduce Motion:</b> only <code>idleFrame</code> is shown, in colour.</li>
+    <li><b>Built-ins come from this page.</b> <code>tools/render-themes.mjs</code> runs the scene code from this spec's preview with the sprite data from Start here and writes the five folders. Its output is committed, so the app ships plain PNGs.</li>
+    <li><b>Original art and names</b> (Chomp, Invaders, Kong, Galaxy, Blocks), in the spirit of the classics, so a public repo stays clean.</li>
+  </ul>
+  <h3>How it fits our setup</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Where</th><th>What 1UP does there</th></tr></thead>
+    <tbody>
+      <tr><td>GitHub (<code>masterytrack</code>)</td><td>Source, PR reviews and Releases. The <code>@claude review</code> flow works as on our main repo.</td></tr>
+      <tr><td>Claude Code</td><td>Builds it: the repo's <code>CLAUDE.md</code> carries the rules and this spec. Users need nothing extra: no hooks, no plugins, no settings.</td></tr>
+      <tr><td><code>npm run work</code> worktrees</td><td>Rows show the worktree name, so <code>work-pages-bg</code> reads as <code>pages-bg</code>.</td></tr>
+      <tr><td>Slack</td><td>A <code>#1up</code> channel. If 1UP ever disagrees with a terminal, post what you saw and attach that day's log file.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Two ways to get it</h3>
+  <ul class="tight col">
+    <li><b>Download:</b> <code>1UP.dmg</code> from Releases. Most people.</li>
+    <li><b>From source:</b> <code>git clone</code>, then <code>swift build</code> or open in Xcode. Signing is optional for your own Mac.</li>
+  </ul>
+</section>
+
+<section id="ui-ref">
+  <span class="eyebrow">UI reference</span>
+  <h2>Every surface, sized and worded</h2>
+  <h3>Menu bar item</h3>
+  <div class="tbl"><table><thead><tr><th>Property</th><th>Value</th></tr></thead><tbody>
+    <tr><td>Layout</td><td>6 pt padding · 44 × 16 scene · 4 · working count · 8 · 14 × 14 Needs-you icon · 3 · count · 8 · 14 × 14 Done icon · 3 · count · 6 pt padding. With no working count, the Needs-you icon sits 8 pt after the scene. Where this page's preview and this table disagree, the table wins.</td></tr>
+    <tr><td>Width</td><td>Sized to content, reserving two digits per count so 9 → 10 doesn't shift it. Above 99 it shows "99+".</td></tr>
+    <tr><td>Count type</td><td>SF Pro Text 13 pt semibold, monospaced digits. The working count uses the menu bar colour, Needs you uses its icon's tint, and Done is green.</td></tr>
+    <tr><td>Idle</td><td>The theme's <code>idleFrame</code> as a template image at 50%, no count</td></tr>
+    <tr><td>Can't tell</td><td>Scene at 40%, then a "?" in red, no counts</td></tr>
+    <tr><td>Inactive display, tinted menu bar</td><td>Everything drawn as template images; the icon shapes carry the meaning</td></tr>
+    <tr><td>Increase Contrast</td><td>1 pt outline in the menu bar colour around tinted icons, no transparency</td></tr>
+    <tr><td>Hidden behind the notch</td><td>Not detectable. The welcome card opens as a popover anchored to the item, so if it appears in the middle of the screen instead, the card says "⌘-drag 1UP left in the menu bar so you can see it".</td></tr>
+    <tr><td>VoiceOver</td><td>"1UP: 2 working, 1 needs you, 3 done", "1UP: nothing running", or "1UP: can't read Claude Code status". The hint adds "oldest waiting 3 minutes".</td></tr>
+  </tbody></table></div>
+  <h3>Panel</h3>
+  <div class="tbl"><table><thead><tr><th>Property</th><th>Value</th></tr></thead><tbody>
+    <tr><td>Window</td><td>Non-activating panel under the item, 340 pt wide. Max height is 70% of the screen or 520 pt; rows scroll, the footer stays.</td></tr>
+    <tr><td>Group label</td><td>14 pt theme icon + 11 pt semibold, secondary colour, sentence case</td></tr>
+    <tr><td>Row</td><td>44 pt tall, 6 pt vertical and 8 pt horizontal padding, 6 pt radius. Title 13 pt, truncates at the end. Time right-aligned 11 pt with monospaced digits. Sub-line 11 pt secondary.</td></tr>
+    <tr><td>Sub-line</td><td><code>&lt;state line&gt; · &lt;folder&gt; · &lt;app&gt;</code>. Time lives only in the right column.</td></tr>
+    <tr><td>Empty</td><td>"No Claude Code sessions running. Start claude in any terminal and it shows up here."</td></tr>
+    <tr><td>Time column</td><td>Needs you "1m" · Working "4m" · Done "2m ago" · Idle blank. Durations round down.</td></tr>
+    <tr><td>"?" row</td><td>Sorted into Needs you after 20 s. Sub-line: Unrecognised status "xyz".</td></tr>
+    <tr><td>Footer</td><td>Mark all looked at (disabled when nothing is Done) · ⚙︎ Settings</td></tr>
+    <tr><td>Keys</td><td>↑ ↓ move · Return marks looked at · Esc closes</td></tr>
+    <tr><td>Row VoiceOver</td><td>"Fix the quiz tally, needs you, wants approval, waiting 1 minute, quiz-matrix in VS Code"</td></tr>
+  </tbody></table></div>
+  <h3>Right-click menu</h3>
+  <p class="col">Open Panel · Mark All Looked At · — · Theme ▸ (five, checkmark on current) · Settings… ⌘, · — · Check for Updates… · Quit 1UP ⌘Q</p>
+  <h3>Settings (one 480 pt window, no tabs)</h3>
+  <p class="col">Open at login (switch) · Theme: five 88 × 56 live tiles with an accent ring on the current one · Check my setup button with results inline · footer "1UP 1.0.0 · Check for Updates · GitHub".</p>
+  <h3>Check my setup</h3>
+  <div class="tbl"><table><thead><tr><th>Check</th><th>Pass</th><th>Fail</th><th>Fix button</th></tr></thead><tbody>
+    <tr><td>Sessions</td><td>Found 6 sessions in 1 config folder</td><td>Can't read a sessions folder (shows the path)</td><td>None</td></tr>
+    <tr><td>Claude Code version</td><td>Tested with 2.1.295 (read from each status file's <code>version</code>)</td><td>New version 2.2.0, not yet verified (still working) · or 2.1.260 or older: "Update Claude Code to see status"</td><td>None</td></tr>
+    <tr><td>Login</td><td>Opens at login</td><td>macOS is holding 1UP for approval</td><td>Open Login Items</td></tr>
+  </tbody></table></div>
+  <h3>Prompts</h3>
+  <div class="tbl"><table><thead><tr><th>When</th><th>Copy</th><th>Buttons</th></tr></thead><tbody>
+    <tr><td>Opened outside Applications</td><td>Move 1UP to Applications? It needs to be there to open at login.</td><td>Move and Relaunch · Not Now</td></tr>
+    <tr><td>Update available</td><td>1UP 1.1 is available. (release notes)</td><td>Install and Relaunch · Later</td></tr>
+  </tbody></table></div>
+  <p class="col muted">English only in v1, with every string through <code>String(localized:)</code>. Durations use the system's abbreviated format. Tint values per theme: light need #e2680a, waited #d8261c, done #1c9353; dark #ff9a3d, #ff4a3d, #3fd184. Each tint keeps at least 3:1 contrast on both menu bar appearances.</p>
+</section>
+
+<section id="plan">
+  <span class="eyebrow">Milestones</span>
+  <h2>Six milestones, each with a test you can see</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Milestone</th><th>Build</th><th>Done when</th></tr></thead>
+    <tbody>
+      <tr><td><b>M0 · Gate</b><br>1–2 days</td><td>Try Claude Status Bar and Glint for a day each. Run every test matrix row by hand on two Macs (one using VS Code) with <code>1up-watch.py</code>, and confirm what <code>/rename</code> writes (<code>custom-title</code> and the status file's <code>nameSource</code>). </td><td><b>Go</b> if there is zero Done without a real turn, no wrong-state period over 2 s, and p95 latency ≤ 2 s. <b>Pivot</b> to adopting an existing app or a SwiftBar plugin if a common case is wrong. <b>Stop</b> if the status files change shape between minor versions.</td></tr>
+      <tr><td><b>M1 · Core</b><br>2 days</td><td><code>OneUpCore</code>: status reader, transcript tail reader, reducer, persistence, log. A <code>oneup-dump</code> command prints every session's state once a second.</td><td>Every reducer row and every VERIFIED matrix row has a passing fixture test. <code>oneup-dump</code> agrees with your terminals for a working day.</td></tr>
+      <tr><td><b>M2 · Menu bar and panel</b><br>2 days</td><td><code>tools/render-themes.mjs</code> and the Chomp theme folder, menu bar item, panel with states and where each session runs, Done clearing</td><td>Screenshots match the UI reference, and this page's preview where the reference is silent, at 1× and 2×, light and dark. Keyboard and VoiceOver work as in the UI reference.</td></tr>
+      <tr><td><b>M3 · Everyday use</b><br>2 days</td><td>Welcome card, Check my setup, Settings, move to Applications</td><td>A teammate installs it without help in under a minute, and every Check my setup failure says what to do.</td></tr>
+      <tr><td><b>M4 · Themes</b><br>1 day</td><td>The other four theme folders and the theme picker</td><td><code>ThemeTests</code> pass and every theme matches the gallery on this page.</td></tr>
+      <tr><td><b>M5 · Ship and pilot</b><br>1 week</td><td>Signing, notarising, Sparkle, README. Pilot with five people across at least three terminals, anything wrong reported in <code>#1up</code>.</td><td>The success numbers at the top of this half are met. Then share with everyone.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>After the pilot: useful first, then fun</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Useful (each ships only after its own test)</th><th>Fun</th></tr></thead>
+    <tbody>
+      <tr><td>Alerts for Needs you and long turns, cleared once handled</td><td>More cabinets: Frogger, Asteroids, Centipede, Dig Dug</td></tr>
+      <tr><td>⌃⌥Space to open the panel</td><td>Drop your own theme folder into <code>~/Library/Application Support/1UP/Themes</code></td></tr>
+      <tr><td>The question or last reply shown in each row</td><td>A bonus item when every session has ended and you've looked at them all</td></tr>
+      <tr><td>Jump to the session's tab, if it lands right 20 times out of 20 per terminal</td><td>End-of-day line, worded per theme ("Chomp ate 23 turns today")</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="decisions">
+  <span class="eyebrow">Decisions</span>
+  <h2>Answered, plus three for Hobe</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Question</th><th>Answer</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Read Claude Code's internal status files?</td><td>Yes</td><td>It's the only source that matches the terminal when background shells are running. Every read is shape-checked, and fixture tests pin the format per Claude Code version. We'll also ask Anthropic to add <code>shell</code> to <code>claude agents --json</code>.</td></tr>
+      <tr><td>Row titles?</td><td><code>/rename</code> name, then Claude Code's generated session title, then folder #n</td><td>The generated title exists in 178 of 188 sessions. Claude Code's internal names collide.</td></tr>
+      <tr><td>Signed builds for the pilot?</td><td>Yes, signed and notarised from the first build</td><td>On macOS 15, unsigned apps need a trip to System Settings to open.</td></tr>
+      <tr><td>One-click updates?</td><td>Yes (Sparkle) in v1</td><td>Claude Code ships weekly. Manual updates get skipped, and rows drift to "?".</td></tr>
+      <tr><td>Jump to the session's tab?</td><td>Not in v1. Rows say where the session runs instead.</td><td>It needs an extension, extra permissions and per-terminal cases, and a wrong landing costs trust. It comes back only if it passes its own 20-of-20 test.</td></tr>
+      <tr><td>Turns that ended before 1UP was installed?</td><td>Idle. Everything running at first launch counts as already looked at.</td><td>Simple, and you never start with a pile of checks.</td></tr>
+      <tr><td>Interrupted or errored turns?</td><td>Done. The row says "Interrupted · ran Xm" when the 1.5 s rule fired, otherwise "Ended · ran Xm".</td><td>Honest without reading reply text.</td></tr>
+      <tr><td>Alerts, shortcut, previews, report a mismatch, Homebrew?</td><td>Not in v1</td><td>Each adds a moving part without making the core more accurate. Fixture tests and the daily log cover accuracy; post in <code>#1up</code> if something looks wrong.</td></tr>
+      <tr><td>How does Done clear?</td><td>Row click, Mark all looked at, or the next prompt in that session</td><td>Simple and predictable. Nothing watches your terminals.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>The name</h3>
+  <p class="col"><b>1UP.</b> In arcades, 1UP flashes when it's player one's turn, which is this app's main job. It replaced the working name Waka, which only fit one theme and would have sat next to WakaTime (about 23 million installs) in VS Code's marketplace. Identifiers: app <code>1UP</code>, repo <code>masterytrack/1up</code>, Swift module <code>OneUpCore</code>.</p>
+  <h3>Still open</h3>
+  <ul class="tight col">
+    <li><b>Public or private repo?</b> Recommended: public under <code>masterytrack</code>, MIT licence. Nothing in it is ours to protect, and public makes Releases and the update feed work with no logins. Private works too, but downloads and updates then need a hosted copy (for example an S3 bucket).</li>
+    <li><b>Who holds the team Apple Developer ID</b> for signing and notarising?</li>
+    <li><b>Backup owner</b> who can re-run the test when Claude Code changes its status files.</li>
+  </ul>
+</section>
+
+<section id="rollout">
+  <span class="eyebrow">Rollout &amp; risks</span>
+  <h2>For teammates</h2>
+  <div class="col stack">
+    <ul class="tight">
+      <li><b>Privacy:</b> nothing about your sessions leaves your Mac. The only network use is the update check, which downloads the public release feed and sends nothing but the app version. 1UP reads <code>~/.claude/sessions/*.json</code> (never the <code>.key</code> files or sockets beside them), and from the end of each transcript only the session title and turn-end records. It writes only its preferences, the saved "last looked at" times, and a local log of state changes kept for 7 days at <code>~/Library/Logs/1UP/</code>.</li>
+      <li><b>Permissions:</b> none. 1UP never asks for alerts, Automation, Accessibility or Full Disk Access. If macOS holds the login item for approval, 1UP links straight to Login Items.</li>
+      <li><b>Not covered:</b> Claude Code on the web, the desktop app's chats, <code>claude -p</code> scripts, background sessions (<code>claude --bg</code>), other machines, other macOS users, and the VS Code extension's chat panel (CLI sessions in VS Code's terminal are covered).</li>
+    </ul>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Risk</th><th>What happens</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>Claude Code changes its status file</td><td>Rows show "?" (shape check)</td><td>Fixture tests per version, owner re-runs the test matrix, Check my setup flags an unverified version</td></tr>
+      <tr><td>Two sessions running different Claude Code versions</td><td>Common: 2.1.293, 2.1.294 and 2.1.295 have been seen running side by side</td><td>Shape check is per file, not per install</td></tr>
+      <tr><td>A turn ends while a background shell lives on</td><td>Terminal at the prompt, <code>agents --json</code> says busy</td><td>Read <code>shell</code> from the file and show "Idle · background shell running"</td></tr>
+      <tr><td>Signing account owner leaves</td><td>Can't ship updates</td><td>Use the team Developer ID, not a personal one</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<div class="appendix-mark" id="arch">Appendix · for whoever builds it</div>
+
+<section style="border-top:0;padding-top:8px">
+  <span class="eyebrow">A · Architecture</span>
+  <h2>Event-driven, nothing polled every second</h2>
+  <div class="diagram" role="img" aria-label="Claude Code sessions write status files and transcripts. FSEvents plus a 5 second folder check feed the reducer, and process-exit sources remove rows. The reducer drives the menu bar and the panel.">
+    <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrow"/></marker></defs>
+      <rect class="box" x="10" y="20" width="170" height="64" rx="8"/><text x="24" y="46">claude sessions</text><text class="s" x="24" y="66">any terminal or editor</text>
+      <rect class="box key" x="230" y="20" width="200" height="64" rx="8"/><text x="244" y="46">~/.claude/sessions/*.json</text><text class="s" x="244" y="66">status · waitingFor · procStart</text>
+      <rect class="box" x="230" y="118" width="200" height="56" rx="8"/><text x="244" y="142">process-exit source</text><text class="s" x="244" y="160">row removed at once</text>
+      <rect class="box key" x="480" y="100" width="180" height="92" rx="8"/><text x="494" y="128">Reducer</text><text class="s" x="494" y="148">state per pid + startedAt</text><text class="s" x="494" y="166">saved "last looked at"</text><text class="s" x="494" y="182">shape check</text>
+      <rect class="box" x="710" y="20" width="180" height="50" rx="8"/><text x="724" y="50">Menu bar item</text>
+      <rect class="box" x="710" y="120" width="180" height="50" rx="8"/><text x="724" y="150">Panel</text>
+      <path d="M180 52H226" marker-end="url(#ah)"/><text class="s" x="184" y="44">write</text>
+      <path d="M95 84V146H226" marker-end="url(#ah)"/>
+      <path d="M430 52C460 52 455 120 476 126" marker-end="url(#ah)"/><text class="s" x="436" y="44">FSEvents + 5 s check</text>
+      <path d="M430 146H476" marker-end="url(#ah)"/>
+      <path d="M660 128C690 128 685 45 706 45" marker-end="url(#ah)"/>
+      <path d="M660 146H706" marker-end="url(#ah)"/>
+    </svg>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Part</th><th>Build</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>App shell</td><td>Swift 6. AppKit <code>NSStatusItem</code> for the animated icon, SwiftUI panel in an <code>NSPanel</code></td><td><code>LSUIElement</code>, no Dock icon. Not sandboxed (it reads the Claude Code config folders it finds). Developer ID and hardened runtime. No Automation or Accessibility entitlements.</td></tr>
+      <tr><td>Watcher</td><td>FSEvents on the sessions folder (file-level events, 100 ms debounce, dirty flag if an event lands mid-read). A 5 s folder listing with modified times catches anything FSEvents drops, such as after sleep.</td><td>Near-zero cost while nothing changes.</td></tr>
+      <tr><td>Exit detection</td><td><code>DispatchSource.makeProcessSource(.exit)</code> per pid</td><td>Removes rows the moment a session ends, including <code>kill -9</code>, with no polling.</td></tr>
+      <tr><td>Reducer</td><td>Pure Swift in <code>OneUpCore</code>, fixture-tested with saved status files from each Claude Code version</td><td>Key is pid + <code>startedAt</code>. Pid reuse is ruled out by matching <code>procStart</code> to the process start time. <code>sessionId</code> is just an attribute, so <code>/clear</code> and <code>/resume</code> keep the row.</td></tr>
+      <tr><td>Row titles</td><td>Transcript at <code>&lt;configDir&gt;/projects/&lt;cwd with non-alphanumerics as "-"&gt;/&lt;sessionId&gt;.jsonl</code>, falling back to a glob on the sessionId</td><td>Read from the end: <code>custom-title</code>, <code>ai-title</code> and <code>turn_duration</code> only. Cached per session.</td></tr>
+      <tr><td>Where it runs</td><td>The app name comes from the session's <code>TERM_PROGRAM</code> (<code>vscode</code> → VS Code, <code>iTerm.app</code> → iTerm2, <code>Apple_Terminal</code> → Terminal; <code>__CFBundleIdentifier</code> tells Cursor from VS Code; with <code>TMUX</code> set it reads "VS Code · tmux"). Unknown values show the raw name.</td><td>The same read gives <code>CLAUDE_CONFIG_DIR</code> (see Every config folder). Read only, no permission needed.</td></tr>
+      <tr><td>Distribution</td><td>Notarised, stapled DMG on GitHub Releases and a Sparkle feed, both published by the tag workflow</td><td>Before registering the login item (<code>SMAppService</code>), 1UP checks it's running from /Applications and offers to move itself if not.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="matrix">
+  <span class="eyebrow">B · Test matrix</span>
+  <h2>Release checklist: terminal vs 1UP</h2>
+  <p class="col"><span class="v v-ok">VERIFIED</span> means checked against real status files and transcripts from Claude Code 2.1.261–2.1.295. <span class="v v-doc">DOCUMENTED</span> means it comes from Claude Code's docs. <span class="v v-todo">SPIKE</span> means it must pass the hand-run matrix in M0.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Scenario</th><th>Terminal shows</th><th>1UP must show</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Six sessions in one VS Code window, same folder</td><td>Six terminal tabs</td><td>Six rows with distinct titles</td><td><span class="v v-ok">VERIFIED</span> list · <span class="v v-todo">SPIKE</span> titles</td></tr>
+      <tr><td>Turn ends while a background shell keeps running</td><td>Empty prompt</td><td>Done, then Idle · background shell running</td><td><span class="v v-ok">VERIFIED</span> status file says <code>shell</code></td></tr>
+      <tr><td>Send a prompt</td><td>Spinner</td><td>Working within 1 s</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Very short turn (under 1 s)</td><td>Answer appears</td><td>Done (new <code>turn_duration</code> record)</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Permission prompt, including one raised by a subagent</td><td>"Do you want to proceed?"</td><td>Needs you · Wants approval</td><td><span class="v v-doc">DOCUMENTED</span> · <span class="v v-todo">SPIKE</span> subagent</td></tr>
+      <tr><td>AskUserQuestion, plan approval, MCP form</td><td>Question with options</td><td>Needs you · Asked a question</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td><code>/config</code> or another menu left open</td><td>A dialog</td><td>Needs you · A dialog is open</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Esc mid-turn</td><td>"Interrupted", prompt</td><td>Done · Interrupted (no turn record, 1.5 s rule)</td><td><span class="v v-ok">VERIFIED</span> transcripts</td></tr>
+      <tr><td>API error, rate limit, retry countdown</td><td>Error or countdown</td><td>Working while retrying, then Done</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Auto-compact, <code>/compact</code></td><td>"Compacting…"</td><td>Working, same row</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td><code>/clear</code>, <code>/resume</code></td><td>Same tab</td><td>Same row</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Long foreground Bash command</td><td>Command running</td><td>Working</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td><code>/exit</code>, close the tab, <code>kill -9</code></td><td>Tab gone</td><td>Row gone within 1 s</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>1UP quits and relaunches after a turn ended</td><td>Answer waiting</td><td>Still Done</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Mac sleeps mid-turn, wakes</td><td>Resumes or errors</td><td>Fresh read on wake, matches</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>15 sessions at once</td><td>15 tabs</td><td>15 rows, panel scrolls</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td><code>claude -p</code>, IDE extension chats</td><td>Not an interactive terminal</td><td>Not listed (<code>kind</code> ≠ interactive or <code>entrypoint</code> ≠ cli)</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Background shell exits after you looked, Claude doesn't react</td><td>Nothing changes</td><td>No Done</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Background task finishes and Claude reacts (16% of turns in the scan)</td><td>Claude works, then prompt</td><td>Working, then Done</td><td><span class="v v-ok">VERIFIED</span> transcripts</td></tr>
+      <tr><td>Two prompts queued while busy</td><td>Both answered</td><td>One Done (one turn record covers both)</td><td><span class="v v-ok">VERIFIED</span> transcripts</td></tr>
+      <tr><td>Close <code>/config</code></td><td>Prompt</td><td>No Done</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>New session, no prompt yet</td><td>Empty prompt</td><td>Idle</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Stale file from a crash, pid reused by another app</td><td>No session</td><td>No row</td><td><span class="v v-todo">SPIKE</span> (fixture)</td></tr>
+      <tr><td>File read mid-write</td><td>None</td><td>No "?" flash</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Watcher misses events (paused, then resumed)</td><td>Whatever changed</td><td>Matches within 5 s</td><td><span class="v v-todo">SPIKE</span></td></tr>
+      <tr><td>Two sessions with the same Claude Code name</td><td>Two tabs</td><td>Two rows, different titles</td><td><span class="v v-ok">VERIFIED</span> names collide</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Running the matrix</h3>
+  <p class="col">For v1 the matrix is run by hand. Keep <code>1up-watch.py</code> (later <code>oneup-dump</code>) open beside the terminals, step through each row, and note the time from what the terminal shows to the line appearing. Pass: zero Done without a real turn, no disagreement longer than 2 s, p95 ≤ 2 s. Every failure becomes a fixture and a new row. Re-run whenever the Check my setup version line says "not yet verified".</p>
+</section>
+
+<section id="build-ref">
+  <span class="eyebrow">D · Build reference</span>
+  <h2>What the transcripts showed, and the exact rules</h2>
+  <h3>Transcript scan (188 sessions, Claude Code 2.1.261–2.1.295, read-only)</h3>
+  <div class="tbl"><table><thead><tr><th>Question</th><th>Answer</th></tr></thead><tbody>
+    <tr><td>Does a finished turn write <code>turn_duration</code>?</td><td>Yes: 493 of 518 CLI turns. The rest were still running, interrupted, or queued behind another prompt. Short turns are included, down to 120 ms.</td></tr>
+    <tr><td>Interrupts (Esc)?</td><td>3 of 4 write no record. The marker is a user record with text "[Request interrupted by user]" or "…for tool use]". Hence the 1.5 s rule.</td></tr>
+    <tr><td>API errors?</td><td>4 of 4 write a record. The error is an assistant record with <code>isApiErrorMessage: true</code>.</td></tr>
+    <tr><td>Slash commands only (<code>/model</code>)?</td><td>No record, no Done</td></tr>
+    <tr><td>Compaction?</td><td>The turn still gets a record. Compaction itself is <code>system/compact_boundary</code>.</td></tr>
+    <tr><td>Subagents?</td><td>Never in the main transcript. Their files are under <code>&lt;sessionId&gt;/subagents/</code>, so read only the top-level <code>*.jsonl</code>.</td></tr>
+    <tr><td>Background-task turns?</td><td>87 of 543 turns start with a task notification. They are real turns and end in Done.</td></tr>
+    <tr><td>Titles?</td><td><code>custom-title</code> (from <code>/rename</code>) and <code>ai-title</code> (in 178 of 188 sessions). Both are re-appended many times and carry no timestamp, so the last one in the file wins. Status-file <code>nameSource</code> values seen: derived, user, collision, auto, hook, peer; only "user" is a rename.</td></tr>
+    <tr><td>Desktop app and SDK sessions?</td><td>Never write <code>turn_duration</code>, which is one more reason to list <code>kind: interactive</code> CLI sessions only</td></tr>
+  </tbody></table></div>
+  <h3>Reducer</h3>
+  <div class="tbl"><table><thead><tr><th>Before</th><th>Event</th><th>After</th></tr></thead><tbody>
+    <tr><td>any</td><td><code>status = busy</code></td><td>Working; Done cleared ✱</td></tr>
+    <tr><td>any</td><td><code>waiting</code> + reason</td><td>Needs you</td></tr>
+    <tr><td>any</td><td><code>idle</code>/<code>shell</code> and latest <code>turn_duration</code> &gt; lastLookedAt</td><td>Done</td></tr>
+    <tr><td>Working, or Needs you (not dialog)</td><td><code>idle</code>/<code>shell</code>, no new record within 1.5 s</td><td>Done · Interrupted</td></tr>
+    <tr><td>Needs you (dialog), Idle</td><td><code>idle</code>/<code>shell</code></td><td>Idle</td></tr>
+    <tr><td>Done</td><td>Row click, Mark all</td><td>Idle; lastLookedAt = now ✱</td></tr>
+    <tr><td>any</td><td>Process exits, or <code>procStart</code> doesn't match</td><td>Row removed</td></tr>
+    <tr><td>Working</td><td><code>idle</code> with no transcript yet (new session, just after <code>/clear</code>)</td><td>Done · Ended (no "ran"), never Interrupted; title = folder</td></tr>
+    <tr><td>any</td><td>Unreadable file or bad shape</td><td>"?", counted as Needs you after 20 s</td></tr>
+  </tbody></table></div>
+  <p class="col muted">Rows are evaluated top to bottom; the first match wins. ✱ = persisted. A new session starts with lastLookedAt = its startedAt. Sessions already running at 1UP's first launch get lastLookedAt = now. Shape check: <code>pid</code>, <code>sessionId</code>, <code>cwd</code>, <code>kind</code>, <code>status</code>, <code>startedAt</code> and <code>procStart</code> are required, <code>entrypoint</code> is optional (missing means cli), unknown keys are ignored, and an unknown <code>status</code> gives "?", and an unknown <code>waitingFor</code> gives Needs you · Waiting: &lt;raw&gt;. <code>procStart</code> is UTC in <code>ps</code> format with a space-padded day. Parse it as en_US_POSIX UTC and compare with <code>sysctl(KERN_PROC_PID)</code> start time ±1 s.</p>
+  <h3>Timers, in one place</h3>
+  <div class="tbl"><table><thead><tr><th>Timer</th><th>Value</th></tr></thead><tbody>
+    <tr><td>FSEvents debounce · half-written file retry</td><td>100 ms · 3 × 50 ms</td></tr>
+    <tr><td>Interrupt grace (no turn record)</td><td>1.5 s</td></tr>
+    <tr><td>Folder scan · "?"</td><td>5 s · after 20 s unreadable</td></tr>
+    <tr><td>Needs-you icon turns red</td><td>2 min</td></tr>
+    <tr><td>Log retention</td><td>7 days</td></tr>
+    <tr><td>Animation</td><td>8 fps, nothing flashes faster than 4 Hz</td></tr>
+  </tbody></table></div>
+
+  <h3>Pinned implementation rules</h3>
+  <ul class="tight col">
+    <li><b>Busy resets the clock:</b> status <code>busy</code> sets <code>lastLookedAt = statusUpdatedAt</code> and <code>busySince = statusUpdatedAt</code> (both persisted), so an interrupted turn never shows the previous turn's "Ended".</li>
+    <li><b>Times:</b> <code>lastLookedAt</code>, <code>busySince</code> and <code>statusUpdatedAt</code> are epoch milliseconds. <code>turn_duration</code> is compared on its ISO <code>timestamp</code>. "Ended · ran" uses <code>durationMs</code>; "Interrupted · ran" uses now − <code>busySince</code>.</li>
+    <li><b>Ages:</b> the time column and the 2-minute red both use <code>statusUpdatedAt</code>, so they survive a 1UP restart. Under 60 s shows seconds ("45s"), under 60 min minutes ("4m"), otherwise hours ("2h"), always rounded down.</li>
+    <li><b>"?" in its first 20 s</b> keeps the row's last known state. A row with no last state is listed under Working without counting.</li>
+    <li><b>First launch</b> means no <code>state.json</code> exists: every session gets lastLookedAt = now. Later, a session unknown to <code>state.json</code> gets lastLookedAt = its <code>startedAt</code>.</li>
+    <li><b>Claude Code processes</b> are this user's processes whose <code>argv[0]</code> or <code>argv[1]</code> path ends in <code>claude</code> or <code>@anthropic-ai/claude-code/cli.js</code>. They are used only to discover config folders; sessions themselves always come from status files.</li>
+    <li><b>Folder name:</b> <code>basename(cwd)</code> with a leading <code>work-</code> removed.</li>
+    <li><b>First transcript read:</b> the last 256 KB, then forward from the saved offset. If no title was found, scan backwards once for one.</li>
+    <li><b>Fixture format:</b> <code>{"steps": [{"t_ms": 0, "status": {…}, "transcriptAppend": ["…"]}], "expect": [{"t_ms": 1600, "state": "done", "line": "Interrupted · ran 0s"}]}</code>. <code>tools/capture-fixtures.sh</code> replaces cwd, names, titles and socket paths with placeholders before writing.</li>
+    <li><b><code>oneup-dump</code></b> prints one line per session every second: <code>HH:MM:SS  pid  state  line  ·  title</code>.</li>
+    <li><b>Panel details:</b> the Idle group is a "Idle (n) ▸" toggle, sorted newest first. Group labels use the theme's Needs-you icon, Done icon, <code>icon.png</code> for Working, and a grey dot for Idle. With nothing running, the menu bar shows the idle scene at 50% with no counts.</li>
+  </ul>
+  <h3>Rendering the five built-in themes</h3>
+  <ul class="tight col">
+    <li><code>tools/render-themes.mjs</code> (Node with <code>@napi-rs/canvas</code>) contains this page's <code>THEMES</code> scene code and sprite data unchanged. It samples the scene at <code>f = frame / 2</code> for N frames: Chomp 4, Invaders 24, Kong 23, Galaxy 32, Blocks 7.</li>
+    <li>It writes <code>scene.png</code> in colour, <code>scene-ink.png</code> for pixels the page draws in the menu bar text colour (dots, invaders, cannon, fighter body), and <code>scene-dark.png</code> for Chomp's darker yellow.</li>
+    <li>Fixed-colour pixels inside icons go to <code>*-detail.png</code>: ghost and fireball eyes, the bee's yellow and blue, the hammer's dark band, and the Blocks bevel.</li>
+    <li>Invaders' and Galaxy's panel icons use <code>icon-ink.png</code>. Picker tiles are 88 × 56 at 2× on <code>#05060f</code> with ink <code>#f2f4ff</code>, like the gallery screens on this page.</li>
+  </ul>
+  <h3>Files, platform, budgets</h3>
+  <ul class="tight col">
+    <li><b>State:</b> <code>~/Library/Application Support/1UP/state.json</code> = <code>{v:1, sessions:{"pid:startedAt":{lastLookedAt, busySince, lastStatus, lastTurnEnd, offset, title}}}</code>. Written atomically on change and pruned 24 h after the process exits.</li>
+    <li><b><code>waitingFor</code> values</b> are matched literally: <code>permission prompt</code> → Wants approval, <code>input needed</code> → Asked a question, <code>sandbox request</code> → Wants sandbox access, <code>worker request</code> → Worker needs approval, <code>goal proposal</code> → Proposed a goal, <code>dialog open</code> → A dialog is open. "Ran Xm" is measured from when the status became <code>busy</code>.</li>
+    <li><b>Session environment</b> (terminal, <code>CLAUDE_CONFIG_DIR</code>) is read with <code>sysctl(KERN_PROCARGS2)</code> for the claude pid, the same user's process, so no permission is needed.</li>
+    <li><b>Transcripts are tail-read</b> with a saved byte offset per session (transcripts reach 40+ MB). Start over if the file shrinks or <code>sessionId</code> changes after <code>/clear</code>.</li>
+    <li><b>Log:</b> <code>~/Library/Logs/1UP/YYYY-MM-DD.jsonl</code>, one <code>{mono, wall, key, raw, state, reason}</code> per change, also mirrored to <code>os_log</code>.</li>
+    <li><b>Settings keys:</b> <code>openAtLogin = true</code> · <code>theme = "chomp"</code>.</li>
+    <li><b>Platform:</b> macOS 14+, Swift 6 strict concurrency. <code>OneUpCore</code> is pure and synchronous. One <code>actor SessionStore</code> consumes an <code>AsyncStream</code> of file, timer and exit events. The UI model is <code>@MainActor @Observable</code>. </li>
+    <li><b>Budget:</b> under 0.5% CPU averaged while idle, under 40 MB memory, under 1 s from status write to menu bar.</li>
+    <li><b>Compatibility:</b> Claude Code 2.1.261 and later. An unseen version keeps working and shows "not yet verified" in Check my setup.</li>
+    <li><b>Release secrets (CI only):</b> Developer ID certificate and password, notarytool API key, Sparkle EdDSA key.</li>
+    <li><b>Fixtures:</b> <code>Tests/OneUpCoreTests/Fixtures/&lt;version&gt;/</code> holds real status files and transcript snippets for interrupt, API error, compaction, task notification and queued prompts.</li>
+  </ul>
+</section>
+
+<section id="try">
+  <span class="eyebrow">C · Spike tool</span>
+  <h2>A 60-line watcher to check the idea</h2>
+  <p class="col">Run this in a spare terminal and use Claude normally in your other tabs. Each line is a state change. It uses simplified rules: Done comes from the previous status only, with no transcript and no "looked at", so a Done stays until that session's next prompt, and turns that ended before you start it show Idle. If a line ever disagrees with a terminal, note what you were doing. That list decides the gate.</p>
+  <div class="code"><div class="cap">1up-watch.py · Python 3, no dependencies · python3 1up-watch.py</div><button class="btn copy" id="copyBtn">Copy</button><pre id="script">#!/usr/bin/env python3
+&quot;&quot;&quot;Prints a line each time a Claude Code session changes state. Ctrl-C to stop.&quot;&quot;&quot;
+import glob, json, os, time
+
+DIR = os.path.join(os.environ.get(&quot;CLAUDE_CONFIG_DIR&quot;, os.path.expanduser(&quot;~/.claude&quot;)), &quot;sessions&quot;)
+last = {}
+
+
+def alive(pid):
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        pass
+    return True
+
+
+def read(path):
+    for _ in range(3):
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            time.sleep(0.05)
+    return None
+
+
+def state(s, prev):
+    st, why = s.get(&quot;status&quot;), s.get(&quot;waitingFor&quot;)
+    if st == &quot;busy&quot;:
+        return &quot;WORKING&quot;
+    if st == &quot;waiting&quot;:
+        return f&quot;NEEDS YOU ({why or &#x27;waiting&#x27;})&quot;
+    if st in (&quot;idle&quot;, &quot;shell&quot;):
+        prev = prev or &quot;&quot;
+        turn_ended = prev.startswith((&quot;WORKING&quot;, &quot;DONE&quot;)) or (prev.startswith(&quot;NEEDS&quot;) and &quot;dialog open&quot; not in prev)
+        return (&quot;DONE&quot; if turn_ended else &quot;IDLE&quot;) + (&quot; + background shell&quot; if st == &quot;shell&quot; else &quot;&quot;)
+    return f&quot;? ({st})&quot;
+
+
+try:
+    while True:
+        seen = set()
+        for path in glob.glob(os.path.join(DIR, &quot;*.json&quot;)):
+            s = read(path)
+            if not s or s.get(&quot;kind&quot;) != &quot;interactive&quot; or not isinstance(s.get(&quot;pid&quot;), int):
+                continue
+            if not alive(s[&quot;pid&quot;]):
+                continue
+            key = (s[&quot;pid&quot;], s.get(&quot;startedAt&quot;))
+            seen.add(key)
+            now = state(s, last.get(key))
+            if last.get(key) != now:
+                print(time.strftime(&quot;%H:%M:%S&quot;), f&quot;{s.get(&#x27;name&#x27;) or str(s[&#x27;pid&#x27;]):32} {last.get(key, &#x27;new&#x27;):&gt;28} -&gt; {now}&quot;, flush=True)
+                last[key] = now
+        for key in set(last) - seen:
+            path = os.path.join(DIR, f&quot;{key[0]}.json&quot;)
+            if not alive(key[0]) or (read(path) or {}).get(&quot;startedAt&quot;) != key[1]:
+                print(time.strftime(&quot;%H:%M:%S&quot;), f&quot;{key[0]:&lt;32} {last.pop(key):&gt;28} -&gt; GONE&quot;, flush=True)
+        time.sleep(0.25)
+except KeyboardInterrupt:
+    pass
+</pre></div>
+  <div class="code"><div class="cap">Sample output. The two "background shell" sessions are ones <code>claude agents --json</code> would call busy.</div><pre>15:50:17 work-stu-weekly-challenge-ac   new -> IDLE
+15:50:17 work-stu-weekly-challenge-8f   new -> IDLE + background shell
+15:50:17 work-stu-weekly-challenge-98   new -> WORKING
+15:50:17 work-stu-weekly-challenge-27   new -> IDLE + background shell
+15:50:17 work-stu-weekly-challenge-6d   new -> IDLE
+15:50:17 work-stu-weekly-challenge-9a   new -> WORKING</pre></div>
+</section>
+
+</div>
+
+<script>
+(() => {
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  let reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let broken = false, stale = false, step = 0;
+
+  function chomper(ctx, x, y, r, mouth, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.arc(x, y, r, mouth, Math.PI * 2 - mouth); ctx.closePath(); ctx.fill();
+  }
+  function check(ctx, x, y, s, color) {
+    ctx.strokeStyle = color; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(x - s, y); ctx.lineTo(x - s * .3, y + s * .7); ctx.lineTo(x + s, y - s * .7); ctx.stroke();
+  }
+  function text(ctx, s, x, y, color) {
+    ctx.fillStyle = color; ctx.font = '600 13px -apple-system, "SF Pro Text", system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    ctx.fillText(s, x, y); return ctx.measureText(s).width;
+  }
+
+  function sizeCanvas(c) {
+    const dpr = window.devicePixelRatio || 1, w = +c.dataset.w, h = +c.dataset.h;
+    if (c._dpr !== dpr) { c._dpr = dpr; c.width = w * dpr; c.height = h * dpr; c.style.width = w + 'px'; c.style.height = h + 'px'; }
+    const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    return { ctx, w, h };
+  }
+
+  const SP = {"GHOST":[".....####.....","...########...","..##########..",".##ww####ww##.",".#wwww##wwww#.",".#wwbb##wwbb#.","##wwbb##wwbb##","###ww####ww###","##############","##############","##############","##############","##.###..###.##","#...##..##...#"],"CHECK":["..............","..............","............##","...........###","..........###.",".........###..",".##.....###...",".###...###....","..###.###.....","...#####......","....###.......",".....#........","..............",".............."],"CRAB":["...#.....#...","....#...#....","...#######...","..##.###.##..",".###########.",".#.#######.#.",".#.#.....#.#.","....##.##...."],"CANNON":["......#......",".....###.....",".....###.....",".###########.","#############","#############","#############","#############"],"SQUID1":["...##...","..####..",".######.","##.##.##","########","..#..#..",".#.##.#.","#.#..#.#"],"SQUID2":["...##...","..####..",".######.","##.##.##","########",".#.##.#.","#......#",".#....#."],"GUN":["....#....","...###...",".#######.","#########","#########"],"KONG1":["....bbbbbb....","...bbbbbbbb...","..bbffbbffbb..","..bfwkffkwfb..","..bffffffffb..","...bfkkkkfb...",".bbbbffffbbbb.","bbbbbbbbbbbbbb","bbb.bbbbbb.bbb","bbb.bbbbbb.bbb","bb..bbbbbb..bb","....bb..bb....","...bbb..bbb...","..bbbb..bbbb.."],"KONG2":["bb..bbbbbb..bb","bbbbbbbbbbbbbb",".bbbffbbffbbb.","..bfwkffkwfb..","..bffffffffb..","...bfkkkkfb...","...bbffffbb...","..bbbbbbbbbb..","..bbbbbbbbbb..","..bbbbbbbbbb..","...bbbbbbbb...","....bb..bb....","...bbb..bbb...","..bbbb..bbbb.."],"BARREL1":[".oooo.","oddddo","oooooo","oooooo","oddddo",".oooo."],"BARREL2":[".oooo.","oooooo","oddddo","oddddo","oooooo",".oooo."],"FIRE":["......#......",".....##..#...","..#..###.##..","..##.######..",".###########.",".##yyyyyyy##.","##ywkyyywky##","##yyyyyyyyy##","##yyyyyyyyy##",".##yyyyyyy##.",".###yyyyy###.","..#########..","....#####...."],"HAMMER":[".##########.",".#dd####dd#.",".##########.",".....##.....",".....##.....",".....##.....",".....##.....",".....##.....",".....##.....","....####....","....####...."],"FIGHTER":[".r............",".rr...........","..wwww........","..wbbwww......",".wwwwwwwww....","wwwwwwwwwwwww.",".wwwwwwwww....","..wbbwww......","..wwww........",".rr...........",".r............"],"BEE":["...#.....#...","....#...#....",".##.yyyyy.##.","###yyyyyyy###","###bbyyybb###",".#.yybbbyy.#.","...yyyyyyy...","..##.yyy.##..",".##...y...##.",".#.........#."],"BEESM":[".#.....#.","..#yyy#..","##yyyyy##","##bbybb##",".#yyyyy#.",".#.y.y.#.","#.......#"],"FLAG":[".##..........",".####........",".######......",".########....",".##########..",".########....",".######......",".####........",".##..........",".##..........",".##..........",".##..........","####........."],"PAC0":["....#####....","..#########..",".###########.",".###########.","#############","#############","#############","#############","#############",".###########.",".###########.","..#########..","....#####...."],"PAC1":["....#####....","..#########..",".###########.",".###########.","###########..","#########....","#######......","#########....","###########..",".###########.",".###########.","..#########..","....#####...."],"PAC2":["....#####....","..#########..",".##########..",".########....","#######......","######.......","#####........","######.......","#######......",".########....",".##########..","..#########..","....#####...."]};
+  const SCENE_W = 44, BOX = 14;
+  const FIXED = { w: '#ffffff', b: '#2121de', k: '#14172e', y: '#ffd21f', f: '#f2b26b', o: '#c8641e', d: '#5c2d0c', r: '#e5484d' };
+  const KONG_PAL = { b: '#8b4a1c', f: '#f2b26b', w: '#ffffff', k: '#2a1206' };
+  const TETRO = { I: '#00c8e0', O: '#f0c800', T: '#a43ff0', S: '#20b850', Z: '#e5322d', J: '#2f5bf0', L: '#f08a00' };
+
+  function sprite(ctx, rows, pal, x, y, px = 1) {
+    x = Math.round(x); y = Math.round(y);
+    rows.forEach((row, j) => [...row].forEach((ch, i) => {
+      if (ch === '.') return;
+      ctx.fillStyle = typeof pal === 'string' ? pal : (pal[ch] || pal['#']);
+      ctx.fillRect(x + i * px, y + j * px, px, px);
+    }));
+  }
+  function boxed(ctx, rows, pal, x, cy) {
+    sprite(ctx, rows, pal, x + Math.floor((BOX - rows[0].length) / 2), cy - BOX / 2 + Math.floor((BOX - rows.length) / 2));
+  }
+  function block(ctx, x, y, s, color, mono) {
+    x = Math.round(x); y = Math.round(y);
+    ctx.fillStyle = color; ctx.fillRect(x, y, s, s);
+    if (mono) return;
+    ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.fillRect(x, y, s, 1); ctx.fillRect(x, y, 1, s);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(x, y + s - 1, s, 1); ctx.fillRect(x + s - 1, y, 1, s);
+  }
+  const tri = t => { const m = ((t % 2) + 2) % 2; return m < 1 ? m : 2 - m; };
+
+  const THEMES = {
+    chomp: {
+      name: 'Chomp', after: 'Pac-Man', needName: 'ghost', doneName: 'check',
+      scene(ctx, L, cy, f, ink, anim, mono) {
+        const tick = anim ? Math.floor(f * 2) : 1, off = anim ? (tick % 4) * 2 : 0;
+        ctx.fillStyle = ink;
+        for (let i = 0; i < 4; i++) { const px = L + 17 + i * 8 - off; if (px > L + 9) ctx.fillRect(px, cy - 1, 2, 2); }
+        sprite(ctx, [SP.PAC2, SP.PAC1, SP.PAC0, SP.PAC1][tick % 4], mono ? ink : css('--chomp'), L, cy - 6);
+      },
+      need(ctx, x, cy, t) { boxed(ctx, SP.GHOST, { '#': t, ...FIXED }, x, cy); },
+      done(ctx, x, cy, t) { boxed(ctx, SP.CHECK, t, x, cy); },
+      icon(ctx, x, cy) { boxed(ctx, SP.PAC1, css('--chomp'), x, cy); }
+    },
+    invaders: {
+      name: 'Invaders', after: 'Space Invaders', needName: 'crab invader', doneName: 'laser cannon',
+      scene(ctx, L, cy, f, ink, anim, mono) {
+        const march = anim ? Math.round(tri(f / 2) * 8) : 4, frame = anim && Math.floor(f * 2) % 2 ? SP.SQUID2 : SP.SQUID1;
+        for (let i = 0; i < 3; i++) sprite(ctx, frame, ink, L + 1 + march + i * 12, cy - 8);
+        const gx = L + 2 + Math.round((anim ? tri(f / 3 + .4) : .5) * 32);
+        sprite(ctx, SP.GUN, ink, gx, cy + 3);
+        if (anim) { ctx.fillStyle = ink; ctx.fillRect(gx + 4, cy + 1 - Math.floor((f * 16) % 9), 1, 2); }
+      },
+      need(ctx, x, cy, t) { boxed(ctx, SP.CRAB, t, x, cy); },
+      done(ctx, x, cy, t) { boxed(ctx, SP.CANNON, t, x, cy); },
+      icon(ctx, x, cy, ink) { boxed(ctx, SP.SQUID1, ink, x, cy); }
+    },
+    kong: {
+      name: 'Kong', after: 'Donkey Kong', needName: 'fireball', doneName: 'hammer',
+      scene(ctx, L, cy, f, ink, anim, mono) {
+        sprite(ctx, anim && Math.floor(f * 2) % 2 ? SP.KONG2 : SP.KONG1, mono ? ink : KONG_PAL, L, cy - 7);
+        ctx.fillStyle = mono ? ink : '#e5484d'; ctx.fillRect(L + 15, cy + 5, SCENE_W - 15, 2);
+        if (!mono) { ctx.fillStyle = '#ffb3b3'; for (let i = 0; i < 7; i++) ctx.fillRect(L + 16 + i * 4, cy + 5, 1, 1); }
+        for (let b = 0; b < 2; b++) {
+          const bx = L + 16 + ((anim ? f * 7 : 3) + b * 13) % 23;
+          sprite(ctx, (Math.floor(f * 2) + b) % 2 ? SP.BARREL2 : SP.BARREL1, mono ? ink : FIXED, Math.round(bx), cy - 1);
+        }
+      },
+      need(ctx, x, cy, t) { boxed(ctx, SP.FIRE, { '#': t, ...FIXED }, x, cy); },
+      done(ctx, x, cy, t) { boxed(ctx, SP.HAMMER, { '#': t, d: 'rgba(0,0,0,.35)' }, x, cy); },
+      icon(ctx, x, cy) { boxed(ctx, SP.KONG1, KONG_PAL, x, cy); }
+    },
+    galaxy: {
+      name: 'Galaxy', after: 'Galaga', needName: 'bee', doneName: 'stage flag',
+      scene(ctx, L, cy, f, ink, anim, mono) {
+        const bob = anim ? Math.round(Math.sin(f * Math.PI) * .8) : 0;
+        sprite(ctx, SP.FIGHTER, mono ? ink : { ...FIXED, w: ink, b: '#3d5afe' }, L, cy - 5 + bob);
+        const by = cy - 3 + (anim ? Math.round(Math.sin(f * 1.4) * 3) : 0);
+        sprite(ctx, SP.BEESM, mono ? ink : { '#': '#3d5afe', ...FIXED }, L + SCENE_W - 9, by);
+        if (anim) { ctx.fillStyle = mono ? ink : '#f0a500'; for (let b = 0; b < 2; b++) ctx.fillRect(L + 15 + Math.floor((f * 10 + b * 10) % 18), cy + bob, 3, 1); }
+      },
+      need(ctx, x, cy, t) { boxed(ctx, SP.BEE, { '#': t, ...FIXED }, x, cy); },
+      done(ctx, x, cy, t) { boxed(ctx, SP.FLAG, t, x, cy); },
+      icon(ctx, x, cy, ink) { boxed(ctx, SP.FIGHTER, { ...FIXED, w: ink, b: '#3d5afe' }, x, cy); }
+    },
+    blocks: {
+      name: 'Blocks', after: 'Tetris', needName: 'T-piece', doneName: 'full block',
+      scene(ctx, L, cy, f, ink, anim, mono) {
+        const C = 4, top = cy - 8, col = k => mono ? ink : TETRO[k];
+        const t = anim ? Math.floor(f * 2) % 7 : 3;
+        const stack3 = 'LLJJOO...SSI'.slice(0, 11), stack2 = 'ZZ.......TT';
+        [...stack2].forEach((k, i) => { if (k !== '.') block(ctx, L + i * C, top + 2 * C, C - 1 + 0, col(k), mono); });
+        if (t < 5) [...stack3].forEach((k, i) => { if (k !== '.') block(ctx, L + i * C, top + 3 * C, C, col(k), mono); });
+        const r = Math.min(t, 3);
+        if (t <= 3) [[6, r], [7, r], [8, r], [7, r - 1]].forEach(([c, rr]) => rr >= 0 && block(ctx, L + c * C, top + rr * C, C, col('T'), mono));
+        if (t === 4) { ctx.fillStyle = mono ? ink : '#ffffff'; ctx.fillRect(L, top + 3 * C, 11 * C, C); }
+      },
+      need(ctx, x, cy, t) { [[0, 0], [1, 0], [2, 0], [1, 1]].forEach(([c, r]) => block(ctx, x + c * 5 - 0, cy - 4 + r * 5, 4, t)); },
+      done(ctx, x, cy, t) { for (let c = 0; c < 3; c++) for (let r = 0; r < 3; r++) block(ctx, x + c * 5 - 0, cy - 7 + r * 5, 4, t); },
+      icon(ctx, x, cy) { [[0, 0], [1, 0], [2, 0], [1, 1]].forEach(([c, r]) => block(ctx, x + c * 5, cy - 4 + r * 5, 4, TETRO.T)); }
+    }
+  };
+
+  let themeId = 'chomp';
+  try { const t = localStorage.getItem('1up-theme'); if (THEMES[t]) themeId = t; } catch {}
+
+  function drawItem(canvas, st, phase) {
+    const th = THEMES[canvas.dataset.theme || themeId];
+    const { ctx, h } = sizeCanvas(canvas);
+    const cy = Math.round(h / 2), ink = css('--bar-ink'), PAD = 6, L = PAD;
+    const count = (str, x, c) => { const w = text(ctx, str, x, cy + 1, c); return Math.ceil(Math.max(w, ctx.measureText('00').width)); };
+    let x = L + SCENE_W;
+    if (st.err) {
+      ctx.globalAlpha = .4; th.scene(ctx, L, cy, 0, ink, false, true); ctx.globalAlpha = 1;
+      x += 4; x += count('?', x, css('--fail'));
+      canvas._contentW = x + PAD;
+      return;
+    }
+    if (st.work > 0) {
+      th.scene(ctx, L, cy, phase, ink, !reduce, false);
+      x += 4; x += count(st.work > 99 ? '99+' : String(st.work), x, ink);
+    } else {
+      ctx.globalAlpha = .5; th.scene(ctx, L, cy, 0, ink, false, true); ctx.globalAlpha = 1;
+    }
+    if (st.need > 0) {
+      const t = css(st.needOld ? '--need-old' : '--need');
+      x += 8; th.need(ctx, x, cy, t); x += BOX + 3;
+      x += count(st.need > 99 ? '99+' : String(st.need), x, t);
+    }
+    if (st.done > 0) {
+      const t = css('--done');
+      x += 8; th.done(ctx, x, cy, t); x += BOX + 3;
+      x += count(st.done > 99 ? '99+' : String(st.done), x, t);
+    }
+    ctx.globalAlpha = 1;
+    canvas._contentW = x + PAD;
+    if (stale) { ctx.globalCompositeOperation = 'destination-in'; ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.globalCompositeOperation = 'source-over'; }
+  }
+
+  function drawScreen(canvas, phase) {
+    const th = THEMES[canvas.dataset.screen];
+    const { ctx, w, h } = sizeCanvas(canvas);
+    ctx.fillStyle = '#05060f'; ctx.fillRect(0, 0, w, h);
+    ctx.save(); ctx.translate(Math.round((w - SCENE_W * 2) / 2), Math.round(h / 2 - 16)); ctx.scale(2, 2);
+    th.scene(ctx, 0, 8, phase, '#f2f4ff', !reduce, false);
+    ctx.restore();
+  }
+
+  const glyphCache = {};
+  function glyphImg(kind, tintVar) {
+    const key = [themeId, kind, tintVar, css(tintVar), css('--bar-ink')].join('|');
+    if (!glyphCache[key]) {
+      const c = document.createElement('canvas'), k = 3; c.width = BOX * k; c.height = BOX * k;
+      const ctx = c.getContext('2d'); ctx.scale(k, k);
+      const th = THEMES[themeId];
+      if (kind === 'work') th.icon(ctx, 0, BOX / 2, css('--bar-ink'));
+      else th[kind](ctx, 0, BOX / 2, css(tintVar));
+      glyphCache[key] = c.toDataURL();
+    }
+    return `<img class="glyph" src="${glyphCache[key]}" alt="">`;
+  }
+
+  const demos = { work: { work: 1 }, work3: { work: 3 }, need: { need: 1 }, needOld: { need: 1, needOld: true }, mix3: { work: 2, need: 2, needOld: true }, done: { done: 2 }, idle: {}, err: { err: true }, mix1: { work: 2, need: 1 }, mix2: { work: 1, need: 1, done: 3 } };
+  const demoCanvases = [...document.querySelectorAll('canvas[data-demo]')];
+  const screens = [...document.querySelectorAll('canvas[data-screen]')];
+
+  const now = Date.now();
+  const sessions = [
+    { name: 'Fix the quiz tally for drag-drop', dir: 'quiz-matrix', app: 'VS Code',  state: 'need', why: 'Wants approval', since: now - 100e3 },
+    { name: 'Historical reporting header', dir: 'history', app: 'VS Code',  state: 'work', since: now - 260e3 },
+    { name: 'Level the Spanish fiction batch', dir: 'leveler', app: 'iTerm2',  state: 'work', since: now - 95e3 },
+    { name: 'Pages background tokens', dir: 'pages-bg', app: 'VS Code',  state: 'done', ran: 14, since: now - 130e3 },
+    { name: 'rc-a11y QA plan', dir: 'rc-a11y', app: 'Terminal',  state: 'idle', shell: true, since: now - 3600e3 }
+  ];
+  const label = { work: 'WORK', need: 'NEED', done: 'DONE', idle: 'IDLE' };
+  const color = { work: '--chomp', need: '--need', done: '--done', idle: '--idle' };
+  let idleOpen = false;
+
+  const counts = () => {
+    if (broken) return { err: true };
+    const c = sessions.reduce((a, s) => (a[s.state] = (a[s.state] || 0) + 1, a), {});
+    c.needOld = sessions.some(s => s.state === 'need' && Date.now() - s.since >= 120e3);
+    return c;
+  };
+  const ago = ms => { const s = Math.floor(ms / 1e3); return s < 60 ? s + 's' : s < 3600 ? Math.floor(s / 60) + 'm' : Math.floor(s / 3600) + 'h'; };
+  const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function glyphSvg(state) {
+    if (state === 'need') return glyphImg('need', '--need');
+    if (state === 'done') return glyphImg('done', '--done');
+    if (state === 'work') return glyphImg('work', '--bar-ink');
+    return `<svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="2.6" fill="var(--idle)"/></svg>`;
+  }
+
+  const panel = document.getElementById('panel');
+  function renderPanel() {
+    const n = Date.now();
+    if (broken) {
+      panel.innerHTML = `<div style="padding:10px 8px;display:flex;flex-direction:column;gap:8px"><b style="color:var(--fail)">Can't read Claude Code status</b>
+        <span style="color:var(--bar-sub)">The sessions folder ~/.claude/sessions can't be read. Check my setup shows which folder and why.</span>
+        <span style="color:var(--bar-sub)">Last good read 34s ago.</span><span style="display:flex;gap:8px"><button class="btn">Retry</button><button class="btn">Check my setup…</button></span></div>`;
+      return;
+    }
+    if (!sessions.length) { panel.innerHTML = `<div class="panel-note">No Claude Code sessions running. Start <b>claude</b> in any terminal and it shows up here.</div>`; return; }
+    const groups = [['need', 'Needs you', (a, b) => a.since - b.since], ['done', 'Done', (a, b) => a.since - b.since], ['work', 'Working', (a, b) => a.since - b.since], ['idle', 'Idle', (a, b) => b.since - a.since]];
+    let html = '';
+    for (const [g, title, sort] of groups) {
+      const rows = sessions.filter(s => s.state === g).sort(sort);
+      if (!rows.length) continue;
+      if (g === 'idle') {
+        html += `<div class="group-label">${glyphSvg(g)}<button id="idleToggle" aria-expanded="${idleOpen}">${title} (${rows.length}) ${idleOpen ? '▾' : '▸'}</button></div>`;
+        if (!idleOpen) continue;
+      } else html += `<div class="group-label">${glyphSvg(g)}${title}</div>`;
+      for (const s of rows) {
+        const i = sessions.indexOf(s);
+        const when = g === 'done' ? ago(n - s.since) + ' ago' : g === 'idle' ? '' : ago(n - s.since);
+        const what = g === 'need' ? s.why : g === 'done' ? `Ended · ran ${s.ran}m` : g === 'work' ? 'Working' : s.shell ? 'Idle · background shell running' : 'Idle';
+        html += `<button class="row" role="menuitem" data-i="${i}"><span class="name">${esc(s.name)}</span><span class="when">${when}</span><span class="sub">${what} · ${esc(s.dir)}${s.app ? ' · ' + s.app : ''}</span></button>`;
+      }
+    }
+    html += `<div class="panel-foot"><button id="markAll">Mark all looked at</button><span><button aria-label="Settings">⚙︎ Settings</button></span></div>`;
+    panel.innerHTML = html;
+  }
+  panel.addEventListener('click', e => {
+    if (e.target.id === 'markAll') { sessions.forEach(s => { if (s.state === 'done') { s.state = 'idle'; s.since = Date.now(); } }); sync(); return; }
+    if (e.target.id === 'idleToggle') { idleOpen = !idleOpen; renderPanel(); return; }
+    const row = e.target.closest('.row');
+    if (!row) return;
+    const s = sessions[+row.dataset.i];
+    if (s.state === 'done') { s.state = 'idle'; s.since = Date.now(); sync(); }
+  });
+
+  const simList = document.getElementById('simList');
+  function renderSim() {
+    simList.innerHTML = sessions.map((s, i) => `<div class="sim-item"><span>${esc(s.name)}</span><div class="seg" role="group" aria-label="${esc(s.name)} state">${
+      ['work', 'need', 'done', 'idle'].map(k => `<button data-i="${i}" data-k="${k}" aria-pressed="${s.state === k}">${label[k]}</button>`).join('')}</div></div>`).join('');
+  }
+  simList.addEventListener('click', e => {
+    const b = e.target.closest('button[data-k]');
+    if (!b) return;
+    const s = sessions[+b.dataset.i], k = b.dataset.k;
+    if (k === 'done') s.ran = s.state === 'work' ? Math.max(1, Math.round((Date.now() - s.since) / 60e3)) : (s.ran || 6);
+    if (k === 'need') s.why = s.why || 'Asked a question';
+    s.state = k; s.since = Date.now();
+    sync();
+  });
+  const extra = ['Oral AI retry notice', 'Media matrix QA kit', 'Weekly challenge stepper', 'Design system site'];
+  document.getElementById('addBtn').onclick = () => {
+    sessions.push({ name: extra[sessions.length % extra.length], dir: 'worktree-' + sessions.length, app: 'Ghostty', state: 'work', since: Date.now() });
+    sync();
+  };
+  const faultBtn = document.getElementById('faultBtn');
+  faultBtn.onclick = () => {
+    broken = !broken; faultBtn.textContent = broken ? 'Back to normal' : 'Simulate a problem';
+    sync();
+  };
+  const itemBtn = document.getElementById('itemBtn');
+  itemBtn.onclick = () => { const open = itemBtn.getAttribute('aria-expanded') !== 'true'; itemBtn.setAttribute('aria-expanded', open); panel.hidden = !open; };
+
+  const barIcon = document.getElementById('barIcon');
+  const themePick = document.getElementById('themePick');
+  function renderThemePick() {
+    const keep = themeId;
+    themePick.innerHTML = Object.entries(THEMES).map(([id, t]) => { themeId = id; const g = glyphImg('work', '--bar-ink'); return `<button data-theme-id="${id}" aria-pressed="${id === keep}">${g}${t.name}</button>`; }).join('');
+    themeId = keep;
+    document.querySelectorAll('[data-use-theme]').forEach(b => {
+      const on = b.dataset.useTheme === themeId;
+      b.textContent = on ? 'In use' : 'Use this theme'; b.setAttribute('aria-pressed', on);
+    });
+  }
+  function setTheme(id) {
+    themeId = id;
+    try { localStorage.setItem('1up-theme', id); } catch {}
+    sync();
+  }
+  themePick.addEventListener('click', e => { const b = e.target.closest('[data-theme-id]'); if (b) setTheme(b.dataset.themeId); });
+  document.querySelectorAll('[data-use-theme]').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.useTheme)));
+  function sync() { renderSim(); renderPanel(); renderThemePick(); }
+
+  let last = 0;
+  function tick(ts) {
+    if (ts - last > 125) {
+      last = ts; step += .5;
+      drawItem(barIcon, counts(), step);
+      if (barIcon._contentW && +barIcon.dataset.w !== barIcon._contentW) { barIcon.dataset.w = barIcon._contentW; barIcon._dpr = 0; drawItem(barIcon, counts(), step); }
+      demoCanvases.forEach(c => drawItem(c, demos[c.dataset.demo], step));
+      screens.forEach(c => drawScreen(c, step));
+    }
+    requestAnimationFrame(tick);
+  }
+  matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', e => { reduce = e.matches; });
+
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async e => {
+    const pre = document.getElementById(b.dataset.copy);
+    try { await navigator.clipboard.writeText(pre.textContent); b.textContent = 'Copied'; }
+    catch { const r = document.createRange(); r.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); b.textContent = 'Selected, press ⌘C'; }
+    setTimeout(() => { b.textContent = 'Copy'; }, 2000);
+  }));
+  document.getElementById('copyBtn').onclick = async e => {
+    const pre = document.getElementById('script');
+    try { await navigator.clipboard.writeText(pre.textContent); e.target.textContent = 'Copied'; }
+    catch { const r = document.createRange(); r.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); e.target.textContent = 'Selected, press ⌘C'; }
+    setTimeout(() => { e.target.textContent = 'Copy'; }, 2000);
+  };
+
+  sync();
+  requestAnimationFrame(tick);
+  setInterval(renderPanel, 5000);
+})();
+</script>
+
+</body></html>

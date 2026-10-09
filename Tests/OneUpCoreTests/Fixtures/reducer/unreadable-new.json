@@ -1,0 +1,21 @@
+{
+ "steps": [
+  {
+   "t_ms": 0,
+   "status": null,
+   "transcriptAppend": []
+  }
+ ],
+ "expect": [
+  {
+   "t_ms": 0,
+   "state": "unknown",
+   "line": "Can't read: unreadable"
+  },
+  {
+   "t_ms": 25000,
+   "state": "unknown",
+   "line": "Can't read: unreadable"
+  }
+ ]
+}

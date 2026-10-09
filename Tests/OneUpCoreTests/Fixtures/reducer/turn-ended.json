@@ -1,0 +1,60 @@
+{
+ "steps": [
+  {
+   "t_ms": 0,
+   "status": {
+    "pid": 4242,
+    "sessionId": "11111111-2222-3333-4444-555555555555",
+    "cwd": "/Users/me/Sites/work-example",
+    "startedAt": 1767225540000,
+    "procStart": "Thu Jan  1 00:00:00 2026",
+    "version": "2.1.295",
+    "kind": "interactive",
+    "entrypoint": "cli",
+    "name": "work-example-ab",
+    "nameSource": "derived",
+    "status": "busy",
+    "updatedAt": 1767225600000,
+    "statusUpdatedAt": 1767225600000
+   },
+   "transcriptAppend": []
+  },
+  {
+   "t_ms": 60000,
+   "status": {
+    "pid": 4242,
+    "sessionId": "11111111-2222-3333-4444-555555555555",
+    "cwd": "/Users/me/Sites/work-example",
+    "startedAt": 1767225540000,
+    "procStart": "Thu Jan  1 00:00:00 2026",
+    "version": "2.1.295",
+    "kind": "interactive",
+    "entrypoint": "cli",
+    "name": "work-example-ab",
+    "nameSource": "derived",
+    "status": "idle",
+    "updatedAt": 1767225660000,
+    "statusUpdatedAt": 1767225660000
+   },
+   "transcriptAppend": [
+    "{\"type\": \"system\", \"subtype\": \"turn_duration\", \"durationMs\": 59900, \"timestamp\": \"2026-01-01T00:00:59.900Z\", \"isSidechain\": false, \"sessionId\": \"11111111-2222-3333-4444-555555555555\"}"
+   ]
+  }
+ ],
+ "expect": [
+  {
+   "t_ms": 30000,
+   "state": "working"
+  },
+  {
+   "t_ms": 60000,
+   "state": "done",
+   "line": "Ended · ran 59s"
+  },
+  {
+   "t_ms": 70000,
+   "state": "done",
+   "line": "Ended · ran 59s"
+  }
+ ]
+}
