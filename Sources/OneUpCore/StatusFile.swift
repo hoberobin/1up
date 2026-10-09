@@ -78,7 +78,8 @@ public struct StatusFile: Equatable, Sendable {
         if required { throw StatusFileError.missing(key) }
         return nil
       }
-      if let n = v as? NSNumber, !(v is Bool) { return n.int64Value }
+      // `v is Bool` is true for every small NSNumber, so booleans are told apart by their CF type.
+      if let n = v as? NSNumber, CFGetTypeID(n) != CFBooleanGetTypeID() { return n.int64Value }
       throw StatusFileError.wrongType(key)
     }
     let pidNum = try req("pid", NSNumber.self)

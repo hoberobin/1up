@@ -62,7 +62,8 @@ final class SessionEngineTests: XCTestCase {
 
   func testPidReuseWithWrongStartTimeIsNotListed() throws {
     try write(pid: getpid(), status: "busy", statusUpdatedAt: 1, procStart: "Thu Oct  8 21:51:57 2020")
-    XCTAssertEqual(makeEngine().refresh(now: 1000).rows.count, 0)
+    let rows = makeEngine().refresh(now: 1000).rows
+    XCTAssertEqual(rows.count, 0, "\(rows)")
   }
 
   func testInterruptThenPersistAcrossRelaunch() throws {
@@ -158,5 +159,26 @@ final class SessionEngineTests: XCTestCase {
     let snap = Snapshot(rows: [a, b, c, d])
     XCTAssertEqual(snap.rows(in: .needsYou).map(\.key), ["b", "a"], "longest waiting first")
     XCTAssertEqual(snap.rows(in: .idle).map(\.key), ["d", "c"], "idle newest first")
+  }
+}
+
+extension SessionEngineTests {
+  func testUnparseableNewFileIsListedThenCountsAsNeedsYou() throws {
+    let me = getpid()
+    try Data("{\"pid\":\(me),\"status\":\"busy\"".utf8).write(to: configDir.appendingPathComponent("sessions/\(me).json"))
+    let engine = makeEngine()
+    var snap = engine.refresh(now: 1000)
+    XCTAssertEqual(snap.rows.count, 1)
+    XCTAssertEqual(snap.rows.first?.state.group, .working)
+    XCTAssertEqual(snap.counts.working, 0, "listed without counting during the grace period")
+    XCTAssertEqual(snap.rows.first?.title, "Session \(me)")
+    snap = engine.refresh(now: 1000 + Reducer.unknownGraceMs, force: true)
+    XCTAssertEqual(snap.rows.first?.state.group, .needsYou)
+    XCTAssertEqual(snap.counts.needsYou, 1)
+    XCTAssertEqual(snap.rows.first?.state.line, "Can't read: Not valid JSON")
+    try write(pid: me, status: "busy", statusUpdatedAt: 30_000)
+    snap = engine.refresh(now: 31_000, force: true)
+    XCTAssertEqual(snap.rows.count, 1, "the placeholder row is replaced once the file parses")
+    XCTAssertEqual(snap.rows.first?.state, .working)
   }
 }

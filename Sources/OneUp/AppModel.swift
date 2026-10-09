@@ -16,12 +16,23 @@ final class AppModel {
   var setupResults: [SetupResult] = []
   var store: SessionStore?
 
+  /// Built-ins in the spec's order, then any extra folders alphabetically.
+  static let builtInOrder = ["chomp", "invaders", "kong", "galaxy", "blocks"]
+
   init(themes: [Theme], problems: [String]) {
-    self.themes = themes
+    self.themes = themes.sorted { a, b in
+      let ia = AppModel.builtInOrder.firstIndex(of: a.id) ?? Int.max, ib = AppModel.builtInOrder.firstIndex(of: b.id) ?? Int.max
+      return ia != ib ? ia < ib : a.name < b.name
+    }
     self.themeProblems = problems
     let wanted = Prefs.theme
     guard let first = themes.first(where: { $0.id == wanted }) ?? themes.first(where: { $0.id == Theme.fallbackID }) ?? themes.first else {
-      fatalError("No theme folder could be loaded: \(problems.joined(separator: "; "))")
+      let alert = NSAlert()
+      alert.messageText = "1UP can't find its themes"
+      alert.informativeText = "No theme folder could be loaded, so there is nothing to draw in the menu bar.\n\n" + problems.joined(separator: "\n")
+      alert.addButton(withTitle: "Quit")
+      alert.runModal()
+      exit(1)
     }
     theme = first
   }

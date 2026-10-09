@@ -32,23 +32,31 @@ struct SettingsActions {
 struct SettingsView: View {
   @Bindable var model: AppModel
   let actions: SettingsActions
+  var startChecked = false
   @State private var openAtLogin = Prefs.openAtLogin
   @State private var checked = false
 
   var body: some View {
     VStack(alignment: .leading, spacing: 18) {
-      Toggle("Open at login", isOn: $openAtLogin)
-        .onChange(of: openAtLogin) { _, on in
-          LoginItem.set(on)
-          if checked { model.runSetupCheck() }
+      VStack(alignment: .leading, spacing: 4) {
+        Toggle("Open at login", isOn: $openAtLogin)
+          .onChange(of: openAtLogin) { _, on in
+            if !LoginItem.set(on) { openAtLogin = false }
+            if checked { model.runSetupCheck() }
+          }
+        if let err = LoginItem.lastError {
+          Text(err).font(.system(size: 11)).foregroundStyle(.secondary)
         }
+      }
       VStack(alignment: .leading, spacing: 8) {
         Text("Theme")
-        HStack(alignment: .top, spacing: 10) {
+        // Five 88 pt tiles with 6 pt gaps fill the 480 pt window edge to edge, so the row uses its own margins.
+        HStack(alignment: .top, spacing: 6) {
           ForEach(model.themes) { theme in
             ThemeTile(theme: theme, selected: theme.id == model.theme.id) { model.selectTheme(id: theme.id) }
           }
         }
+        .padding(.horizontal, -12)
       }
       VStack(alignment: .leading, spacing: 8) {
         Button("Check my setup") {
@@ -86,7 +94,10 @@ struct SettingsView: View {
     .padding(20)
     .frame(width: 480, alignment: .leading)
     .frame(minHeight: 380)
-    .onAppear { openAtLogin = LoginItem.isEnabled || (Prefs.openAtLogin && LoginItem.status == .requiresApproval) }
+    .onAppear {
+      openAtLogin = LoginItem.isEnabled || (Prefs.openAtLogin && LoginItem.status == .requiresApproval)
+      if startChecked { checked = true }
+    }
   }
 }
 

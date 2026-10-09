@@ -89,7 +89,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
   }
 
   @objc private func clicked(_ sender: Any?) {
-    if NSApp.currentEvent?.type == .rightMouseUp {
+    let event = NSApp.currentEvent
+    if event?.type == .rightMouseUp || event?.modifierFlags.contains(.control) == true {
       showMenu()
     } else {
       onLeftClick?()

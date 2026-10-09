@@ -58,6 +58,17 @@ final class StatusFileTests: XCTestCase {
     XCTAssertEqual(s.statusSince, 5)
   }
 
+  func testSmallIntegersAreNotBooleans() throws {
+    let min = """
+      {"pid":1,"sessionId":"s","cwd":"/x","kind":"interactive","status":"busy","startedAt":1,"procStart":"x","statusUpdatedAt":0,"updatedAt":1}
+      """
+    let s = try StatusFile.parse(Data(min.utf8))
+    XCTAssertEqual(s.startedAt, 1)
+    XCTAssertEqual(s.statusUpdatedAt, 0)
+    let bool = min.replacingOccurrences(of: "\"startedAt\":1", with: "\"startedAt\":true")
+    XCTAssertThrowsError(try StatusFile.parse(Data(bool.utf8))) { XCTAssertEqual($0 as? StatusFileError, .wrongType("startedAt")) }
+  }
+
   func testNonInteractiveNotListed() throws {
     let sdk = sample.replacingOccurrences(of: "\"entrypoint\":\"cli\"", with: "\"entrypoint\":\"sdk-ts\"")
     XCTAssertFalse(try StatusFile.parse(Data(sdk.utf8)).isInteractiveCLI)

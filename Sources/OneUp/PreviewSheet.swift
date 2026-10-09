@@ -115,3 +115,45 @@ extension PreviewSheet {
     try png.write(to: url)
   }
 }
+
+extension PreviewSheet {
+  /// `1UP --render-all dir`: menu bar sheet, the panel in its three states, settings and the welcome card.
+  static func renderAll(themes: [Theme], problems: [String], to dir: URL) throws {
+    try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+    try render(themes: themes, to: dir.appendingPathComponent("menubar.png"))
+    try renderPanel(themes: themes, problems: problems, to: dir.appendingPathComponent("panel.png"))
+
+    let empty = AppModel(themes: themes, problems: problems)
+    empty.apply(Snapshot(now: SessionEngine.nowMs()))
+    try write(PanelRoot(model: empty, maxHeight: 520, actions: .init(), scrolls: false).frame(width: 340), to: dir.appendingPathComponent("panel-empty.png"))
+
+    let broken = AppModel(themes: themes, problems: problems)
+    let now = SessionEngine.nowMs()
+    broken.apply(Snapshot(folderError: "The sessions folder /Users/hobe/.claude/sessions can't be read.", unreadableSince: now - 40_000, lastGoodRead: now - 34_000, now: now))
+    try write(PanelRoot(model: broken, maxHeight: 520, actions: .init(), scrolls: false).frame(width: 340), to: dir.appendingPathComponent("panel-cannot-tell.png"))
+
+    let settings = AppModel(themes: themes, problems: problems)
+    settings.apply(Snapshot(rows: [], versions: ["2.1.295"], now: now))
+    settings.setupResults = [
+      SetupResult(title: "Sessions", pass: true, detail: "Found 6 sessions in 1 config folder", fix: nil),
+      SetupResult(title: "Claude Code version", pass: true, detail: "Tested with 2.1.295", fix: nil),
+      SetupResult(title: "Login", pass: false, detail: "macOS is holding 1UP for approval", fix: .openLoginItems),
+    ]
+    try write(SettingsView(model: settings, actions: .init(), startChecked: true), to: dir.appendingPathComponent("settings.png"))
+
+    let welcome = AppModel(themes: themes, problems: problems)
+    welcome.apply(Snapshot(rows: (0..<6).map { i in
+      SessionRow(key: "\(i)", pid: Int32(i), sessionId: "", title: "t", folder: "f", app: nil, state: .idle(backgroundShell: false), since: now, startedAt: now, version: nil, configDir: URL(fileURLWithPath: "/"), rawStatus: "idle")
+    }, now: now))
+    try write(WelcomeView(model: welcome, gotIt: {}), to: dir.appendingPathComponent("welcome.png"))
+  }
+
+  private static func write<V: View>(_ view: V, to url: URL) throws {
+    let light = ImageRenderer(content: view.background(Color(nsColor: .windowBackgroundColor)).environment(\.colorScheme, .light))
+    light.scale = 2
+    guard let img = light.nsImage, let tiff = img.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff),
+      let png = rep.representation(using: .png, properties: [:])
+    else { throw NSError(domain: "preview", code: 2, userInfo: [NSLocalizedDescriptionKey: url.lastPathComponent]) }
+    try png.write(to: url)
+  }
+}

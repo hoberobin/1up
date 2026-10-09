@@ -29,6 +29,20 @@ if let i = CommandLine.arguments.firstIndex(of: "--render-panel"), i + 1 < Comma
   exit(0)
 }
 
+if let i = CommandLine.arguments.firstIndex(of: "--render-all"), i + 1 < CommandLine.arguments.count {
+  let out = URL(fileURLWithPath: CommandLine.arguments[i + 1], isDirectory: true)
+  let root = ThemeLoader.locateBuiltIn(executableURL: Bundle.main.executableURL, resourceURL: Bundle.main.resourceURL)
+  let loaded: (themes: [Theme], problems: [String]) = root.map { ThemeLoader.loadAll(root: $0) } ?? ([], [])
+  do {
+    try PreviewSheet.renderAll(themes: loaded.themes, problems: loaded.problems, to: out)
+    print("wrote \(out.path)")
+  } catch {
+    print("render-all failed: \(error)")
+    exit(1)
+  }
+  exit(0)
+}
+
 let app = NSApplication.shared
 let delegate = AppDelegate()
 app.delegate = delegate

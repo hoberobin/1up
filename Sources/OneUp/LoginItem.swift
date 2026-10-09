@@ -10,19 +10,27 @@ enum LoginItem {
 
   static var isEnabled: Bool { status == .enabled }
 
-  static func set(_ on: Bool) {
+  /// Registers only from Applications: a login item pointing at Downloads breaks the moment the app moves.
+  @discardableResult
+  static func set(_ on: Bool) -> Bool {
     lastError = nil
+    Prefs.openAtLogin = on
+    if on && !MoveToApplications.isInApplications {
+      lastError = "Move 1UP to Applications first, then turn this on."
+      return false
+    }
     do {
       if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
+      return true
     } catch {
       lastError = error.localizedDescription
+      return false
     }
-    Prefs.openAtLogin = on
   }
 
   /// Applies the saved preference at launch, once the app lives in Applications.
   static func applyPreference() {
-    guard Prefs.openAtLogin, Bundle.main.bundlePath.hasSuffix(".app") else { return }
+    guard Prefs.openAtLogin, MoveToApplications.isInApplications else { return }
     if status != .enabled && status != .requiresApproval { set(true) }
   }
 

@@ -53,6 +53,9 @@ enum SetupCheck {
     case .requiresApproval: return SetupResult(title: "Login", pass: false, detail: "macOS is holding 1UP for approval", fix: .openLoginItems)
     case .notFound: return SetupResult(title: "Login", pass: false, detail: "1UP must run from Applications to open at login", fix: nil)
     default:
+      if Prefs.openAtLogin && !MoveToApplications.isInApplications {
+        return SetupResult(title: "Login", pass: false, detail: "1UP must run from Applications to open at login (it is in \(Bundle.main.bundleURL.deletingLastPathComponent().path))", fix: nil)
+      }
       return Prefs.openAtLogin
         ? SetupResult(title: "Login", pass: false, detail: LoginItem.lastError ?? "Not registered to open at login yet", fix: nil)
         : SetupResult(title: "Login", pass: true, detail: "Open at login is off", fix: nil)

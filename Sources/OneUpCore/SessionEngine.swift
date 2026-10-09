@@ -259,23 +259,31 @@ public final class SessionEngine {
     let modified = attrs?[.modificationDate] as? Date
     let pidFromName = Int32((url.lastPathComponent as NSString).deletingPathExtension)
     if let pid = pidFromName, let existing = live.first(where: { $0.value.status.pid == pid && $0.value.fileURL == url }) {
-      if !force, existing.value.modified == modified, modified != nil {
+      // Placeholder rows (a file that never parsed) are re-read every pass so they recover as soon as it parses.
+      if !force, existing.value.modified == modified, modified != nil, existing.value.status.status != "?" {
         return refreshExisting(key: existing.key, now: now)
       }
     }
     let read = readStatus(url: url)
     switch read {
     case .failed(let reason):
-      // A file we never parsed cannot be matched to a process, so it is listed by pid only.
+      // A file that never parsed can only be matched to a process by its pid, so it is listed by pid alone:
+      // under Working without counting for 20 s, then under Needs you, so a changed shape can't hide a wait.
       guard let pid = pidFromName, ProcessReader.isAlive(pid) else { return nil }
-      guard let existing = live.first(where: { $0.value.status.pid == pid && $0.value.fileURL == url }) else { return nil }
-      var l = existing.value
+      let existing = live.first(where: { $0.value.status.pid == pid && $0.value.fileURL == url })
+      let key = existing?.key ?? "\(pid):?"
+      var l = existing?.value ?? Live(
+        status: StatusFile(pid: pid, sessionId: "", cwd: "", status: "?", startedAt: now, procStart: "", statusUpdatedAt: now),
+        configDir: configDir, fileURL: url, modified: modified, transcriptURL: nil, scan: TranscriptScan(), transcriptExists: false,
+        app: nil, appResolved: true, state: .unknown(reason: reason, settled: false))
       l.modified = modified
-      let memory = state.sessions[existing.key] ?? SessionMemory(lastLookedAt: now)
+      let memory = state.sessions[key] ?? SessionMemory(lastLookedAt: now)
       let r = Reducer.reduce(memory: memory, read: .failed(reason), transcript: .none, now: now)
-      apply(reduction: r, to: &l, key: existing.key, memory: memory, now: now)
-      live[existing.key] = l
-      return existing.key
+      let isNew = live[key] == nil
+      apply(reduction: r, to: &l, key: key, memory: memory, now: now)
+      live[key] = l
+      if isNew { onChange?(key, "?", r.state, r.rule, now) }
+      return key
     case .ok(let s):
       guard s.isInteractiveCLI else { return nil }
       guard ProcessReader.matches(pid: s.pid, procStart: s.procStartDate) else { return nil }
@@ -283,7 +291,7 @@ public final class SessionEngine {
       var l = live[key] ?? Live(
         status: s, configDir: configDir, fileURL: url, modified: modified, transcriptURL: nil,
         scan: TranscriptScan(), transcriptExists: false, app: nil, appResolved: false, state: .idle(backgroundShell: false))
-      if live[key] == nil, let stale = live.first(where: { $0.value.status.pid == s.pid && $0.key != key }) {
+      for stale in live where stale.value.status.pid == s.pid && stale.key != key {
         remove(key: stale.key, now: now)
       }
       l.status = s
@@ -392,7 +400,10 @@ public final class SessionEngine {
   }
 
   private func rebuild(now: Int64) {
-    let titles = RowTitle.disambiguate(live.map { (key: $0.key, title: state.sessions[$0.key]?.title ?? RowTitle.folderName(cwd: $0.value.status.cwd), startedAt: $0.value.status.startedAt) })
+    let titles = RowTitle.disambiguate(live.map { entry in
+      let fallback = entry.value.status.cwd.isEmpty ? "Session \(entry.value.status.pid)" : RowTitle.folderName(cwd: entry.value.status.cwd)
+      return (key: entry.key, title: state.sessions[entry.key]?.title ?? fallback, startedAt: entry.value.status.startedAt)
+    })
     var rows: [SessionRow] = []
     var counts = Counts()
     var versions = Set<String>()

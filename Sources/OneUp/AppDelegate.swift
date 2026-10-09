@@ -39,10 +39,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(didWake), name: NSWorkspace.didWakeNotification, object: nil)
 
+    // The move prompt is modal, so it runs before anything animates behind it.
+    MoveToApplications.offerIfNeeded()
+    LoginItem.applyPreference()
     Task {
       await store.start()
-      MoveToApplications.offerIfNeeded()
-      LoginItem.applyPreference()
       if firstLaunch || !Prefs.welcomeShown {
         try? await Task.sleep(for: .milliseconds(600))
         welcome = WelcomeController(model: model) { Prefs.welcomeShown = true }
