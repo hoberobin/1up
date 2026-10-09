@@ -17,6 +17,22 @@ public struct SessionRow: Identifiable, Equatable, Sendable {
   public var configDir: URL
   public var rawStatus: String
 
+  public init(key: String, pid: Int32, sessionId: String, title: String, folder: String, app: String?, state: SessionState, since: Int64,
+              startedAt: Int64, version: String?, configDir: URL, rawStatus: String) {
+    self.key = key
+    self.pid = pid
+    self.sessionId = sessionId
+    self.title = title
+    self.folder = folder
+    self.app = app
+    self.state = state
+    self.since = since
+    self.startedAt = startedAt
+    self.version = version
+    self.configDir = configDir
+    self.rawStatus = rawStatus
+  }
+
   /// `<state line> · <folder> · <app>`.
   public var subLine: String {
     var parts = [state.line, folder]
