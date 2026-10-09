@@ -48,6 +48,9 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     return color
   }
 
+  private var lastLabel = ""
+  private var lastHint: String?
+
   func render() {
     let counts = model.counts
     let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
@@ -56,10 +59,16 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     let image = StatusImageRenderer.render(.init(
       theme: model.theme, counts: counts, cannotTell: model.snapshot.cannotTell, frame: frame, dark: isDarkMenuBar,
       ink: inkColor, increaseContrast: NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast, reduceMotion: reduceMotion))
-    item.button?.image = image
-    item.button?.setAccessibilityLabel(model.accessibilityLabel)
-    item.button?.setAccessibilityHelp(model.accessibilityHint)
-    item.button?.toolTip = model.accessibilityLabel.replacingOccurrences(of: "1UP: ", with: "1UP · ")
+    guard let button = item.button else { return }
+    if button.image !== image { button.image = image }
+    let label = model.accessibilityLabel, hint = model.accessibilityHint
+    if label != lastLabel || hint != lastHint {
+      lastLabel = label
+      lastHint = hint
+      button.setAccessibilityLabel(label)
+      button.setAccessibilityHelp(hint)
+      button.toolTip = label.replacingOccurrences(of: "1UP: ", with: "1UP · ")
+    }
   }
 
   private func updateAnimation(running: Bool) {

@@ -27,6 +27,16 @@ extension NSColor {
   }
 }
 
+/// A CGContext with its height, so callers can place art by its top-left corner. CGImages are
+/// drawn bottom-up; a flipped NSImage handler would turn them upside down.
+struct PixelCanvas {
+  let ctx: CGContext
+  let height: CGFloat
+  func rect(x: CGFloat, top: CGFloat, width: CGFloat, height h: CGFloat) -> CGRect {
+    CGRect(x: x, y: height - top - h, width: width, height: h)
+  }
+}
+
 /// Turns theme pixels into CGImages: tinted masks, ink layers, and the composed icons.
 enum ThemeArt {
   /// An alpha mask filled with one colour (premultiplied), optionally scaled by `alpha`.
@@ -48,78 +58,101 @@ enum ThemeArt {
     PixelImage(width: width, height: height, rgba: bits.flatMap { $0 ? [255, 255, 255, 255] : [0, 0, 0, 0] })
   }
 
-  /// Draws a pixel image at 1 px per point with nearest-neighbour scaling.
-  static func draw(_ image: CGImage?, at origin: CGPoint, scale: CGFloat = 1, alpha: CGFloat = 1, in ctx: CGContext) {
+  /// Draws a pixel image at 1 px per point with nearest-neighbour scaling; `origin` is the top-left corner.
+  static func draw(_ image: CGImage?, at origin: CGPoint, scale: CGFloat = 1, alpha: CGFloat = 1, in canvas: PixelCanvas) {
     guard let image else { return }
+    let ctx = canvas.ctx
     ctx.saveGState()
     ctx.interpolationQuality = .none
     ctx.setAlpha(alpha)
-    ctx.draw(image, in: CGRect(x: origin.x, y: origin.y, width: CGFloat(image.width) * scale, height: CGFloat(image.height) * scale))
+    ctx.draw(image, in: canvas.rect(x: origin.x, top: origin.y, width: CGFloat(image.width) * scale, height: CGFloat(image.height) * scale))
     ctx.restoreGState()
   }
 
   /// Icon = tint mask, then the untinted detail. With Increase Contrast, a 1 pt outline in the menu bar colour first.
-  static func drawIcon(mask: PixelImage, detail: PixelImage?, tint: NSColor, ink: NSColor, outline: Bool, at origin: CGPoint, scale: CGFloat = 1, in ctx: CGContext) {
+  static func drawIcon(mask: PixelImage, detail: PixelImage?, tint: NSColor, ink: NSColor, outline: Bool, at origin: CGPoint, scale: CGFloat = 1, in canvas: PixelCanvas) {
     if outline, let edge = tinted(mask, ink) {
       for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
-        draw(edge, at: CGPoint(x: origin.x + CGFloat(dx) * scale, y: origin.y + CGFloat(dy) * scale), scale: scale, in: ctx)
+        draw(edge, at: CGPoint(x: origin.x + CGFloat(dx) * scale, y: origin.y + CGFloat(dy) * scale), scale: scale, in: canvas)
       }
     }
-    draw(tinted(mask, tint), at: origin, scale: scale, in: ctx)
-    if let detail { draw(detail.toCGImage(), at: origin, scale: scale, in: ctx) }
+    draw(tinted(mask, tint), at: origin, scale: scale, in: canvas)
+    if let detail { draw(detail.toCGImage(), at: origin, scale: scale, in: canvas) }
   }
 
   /// Scene frame = colour art (dark variant on a dark bar), then the ink layer in the menu bar colour.
-  static func drawScene(theme: Theme, frame: Int, dark: Bool, ink: NSColor, at origin: CGPoint, scale: CGFloat = 1, alpha: CGFloat = 1, in ctx: CGContext) {
-    draw(theme.sceneFrame(frame, dark: dark).toCGImage(), at: origin, scale: scale, alpha: alpha, in: ctx)
-    if let inkFrame = theme.sceneInkFrame(frame) { draw(tinted(inkFrame, ink), at: origin, scale: scale, alpha: alpha, in: ctx) }
+  static func drawScene(theme: Theme, frame: Int, dark: Bool, ink: NSColor, at origin: CGPoint, scale: CGFloat = 1, alpha: CGFloat = 1, in canvas: PixelCanvas) {
+    draw(theme.sceneFrame(frame, dark: dark).toCGImage(), at: origin, scale: scale, alpha: alpha, in: canvas)
+    if let inkFrame = theme.sceneInkFrame(frame) { draw(tinted(inkFrame, ink), at: origin, scale: scale, alpha: alpha, in: canvas) }
   }
 
   /// The idle silhouette in one colour.
-  static func drawIdle(theme: Theme, ink: NSColor, alpha: CGFloat, at origin: CGPoint, scale: CGFloat = 1, in ctx: CGContext) {
+  static func drawIdle(theme: Theme, ink: NSColor, alpha: CGFloat, at origin: CGPoint, scale: CGFloat = 1, in canvas: PixelCanvas) {
     let mask = maskImage(from: theme.idleMask, width: Theme.sceneWidth, height: Theme.sceneHeight)
-    draw(tinted(mask, ink, alpha: alpha), at: origin, scale: scale, in: ctx)
+    draw(tinted(mask, ink, alpha: alpha), at: origin, scale: scale, in: canvas)
   }
 
-  static func drawThemeIcon(theme: Theme, ink: NSColor, at origin: CGPoint, scale: CGFloat = 1, in ctx: CGContext) {
-    draw(theme.icon.toCGImage(), at: origin, scale: scale, in: ctx)
-    if let inkMask = theme.iconInk { draw(tinted(inkMask, ink), at: origin, scale: scale, in: ctx) }
+  static func drawThemeIcon(theme: Theme, ink: NSColor, at origin: CGPoint, scale: CGFloat = 1, in canvas: PixelCanvas) {
+    draw(theme.icon.toCGImage(), at: origin, scale: scale, in: canvas)
+    if let inkMask = theme.iconInk { draw(tinted(inkMask, ink), at: origin, scale: scale, in: canvas) }
   }
 
   /// Panel glyphs and picker tiles are plain NSImages built from the same drawing calls.
+  /// Rendered once into a bitmap (not a lazy drawing handler), so the result draws the same everywhere.
   @MainActor
-  static func image(size: CGSize, scale: CGFloat = 1, isTemplate: Bool = false, _ body: @escaping (CGContext) -> Void) -> NSImage {
-    let image = NSImage(size: size, flipped: true) { _ in
-      guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
-      body(ctx)
-      return true
+  static func image(size: CGSize, isTemplate: Bool = false, _ body: (PixelCanvas) -> Void) -> NSImage {
+    let scale: CGFloat = NSScreen.main?.backingScaleFactor ?? 2
+    let image = NSImage(size: size)
+    guard let rep = NSBitmapImageRep(
+      bitmapDataPlanes: nil, pixelsWide: Int(size.width * scale), pixelsHigh: Int(size.height * scale), bitsPerSample: 8,
+      samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)
+    else { return image }
+    rep.size = size
+    NSGraphicsContext.saveGraphicsState()
+    if let gc = NSGraphicsContext(bitmapImageRep: rep) {
+      NSGraphicsContext.current = gc
+      gc.cgContext.interpolationQuality = .none
+      body(PixelCanvas(ctx: gc.cgContext, height: size.height))
     }
+    NSGraphicsContext.restoreGraphicsState()
+    image.addRepresentation(rep)
     image.isTemplate = isTemplate
     return image
   }
 
+  @MainActor private static var glyphCache: [String: NSImage] = [:]
+  @MainActor private static var tileCache: [String: NSImage] = [:]
+
   @MainActor
   static func glyph(theme: Theme, kind: StateGroup, tints: Tints, ink: NSColor) -> NSImage {
+    let key = "\(theme.id)|\(kind)|\(tints.need.rgba8)|\(ink.rgba8)"
+    if let hit = glyphCache[key] { return hit }
     let s = CGFloat(Theme.iconSize)
-    return image(size: CGSize(width: s, height: s)) { ctx in
+    let img = image(size: CGSize(width: s, height: s)) { canvas in
       switch kind {
-      case .needsYou: drawIcon(mask: theme.need, detail: theme.needDetail, tint: tints.need, ink: ink, outline: false, at: .zero, in: ctx)
-      case .done: drawIcon(mask: theme.done, detail: theme.doneDetail, tint: tints.done, ink: ink, outline: false, at: .zero, in: ctx)
-      case .working: drawThemeIcon(theme: theme, ink: ink, at: .zero, in: ctx)
+      case .needsYou: drawIcon(mask: theme.need, detail: theme.needDetail, tint: tints.need, ink: ink, outline: false, at: .zero, in: canvas)
+      case .done: drawIcon(mask: theme.done, detail: theme.doneDetail, tint: tints.done, ink: ink, outline: false, at: .zero, in: canvas)
+      case .working: drawThemeIcon(theme: theme, ink: ink, at: .zero, in: canvas)
       case .idle:
-        ctx.setFillColor(NSColor.tertiaryLabelColor.cgColor)
-        ctx.fillEllipse(in: CGRect(x: 4.4, y: 4.4, width: 5.2, height: 5.2))
+        canvas.ctx.setFillColor(NSColor.tertiaryLabelColor.cgColor)
+        canvas.ctx.fillEllipse(in: CGRect(x: 4.4, y: 4.4, width: 5.2, height: 5.2))
       }
     }
+    glyphCache[key] = img
+    return img
   }
 
   /// 88 × 56 picker tile: the scene at 2× on #05060f with ink #f2f4ff, like the spec's gallery.
   @MainActor
   static func tile(theme: Theme, frame: Int) -> NSImage {
-    image(size: CGSize(width: 88, height: 56)) { ctx in
-      ctx.setFillColor(NSColor(hex: 0x05060f).cgColor)
-      ctx.fill(CGRect(x: 0, y: 0, width: 88, height: 56))
-      drawScene(theme: theme, frame: frame, dark: true, ink: NSColor(hex: 0xf2f4ff), at: CGPoint(x: 0, y: 12), scale: 2, in: ctx)
+    let key = "\(theme.id)|\(frame % theme.frameCount)"
+    if let hit = tileCache[key] { return hit }
+    let img = image(size: CGSize(width: 88, height: 56)) { canvas in
+      canvas.ctx.setFillColor(NSColor(hex: 0x05060f).cgColor)
+      canvas.ctx.fill(CGRect(x: 0, y: 0, width: 88, height: 56))
+      drawScene(theme: theme, frame: frame, dark: true, ink: NSColor(hex: 0xf2f4ff), at: CGPoint(x: 0, y: 12), scale: 2, in: canvas)
     }
+    tileCache[key] = img
+    return img
   }
 }
