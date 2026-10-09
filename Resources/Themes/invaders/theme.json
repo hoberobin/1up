@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "id": "invaders",
+  "name": "Invaders",
+  "after": "Space Invaders",
+  "fps": 8,
+  "idleFrame": 0
+}

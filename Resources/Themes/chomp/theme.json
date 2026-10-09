@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "id": "chomp",
+  "name": "Chomp",
+  "after": "Pac-Man",
+  "fps": 8,
+  "idleFrame": 1
+}

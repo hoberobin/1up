@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "id": "galaxy",
+  "name": "Galaxy",
+  "after": "Galaga",
+  "fps": 8,
+  "idleFrame": 0
+}

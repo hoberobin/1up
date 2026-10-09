@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "id": "blocks",
+  "name": "Blocks",
+  "after": "Tetris",
+  "fps": 8,
+  "idleFrame": 3
+}
