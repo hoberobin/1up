@@ -5,7 +5,7 @@
   <key>CFBundleDevelopmentRegion</key><string>en</string>
   <key>CFBundleDisplayName</key><string>1UP</string>
   <key>CFBundleExecutable</key><string>1UP</string>
-  <key>CFBundleIdentifier</key><string>com.masterytrack.oneup</string>
+  <key>CFBundleIdentifier</key><string>com.hoberobin.oneup</string>
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
   <key>CFBundleName</key><string>1UP</string>
   <key>CFBundlePackageType</key><string>APPL</string>

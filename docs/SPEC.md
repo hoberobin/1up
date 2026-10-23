@@ -17,7 +17,7 @@ In the arcade, 1UP flashes when it's your turn. This 1UP tells you when a Claude
 2. **Open it**Your arcade scene appears in the menu bar. If you opened it from the disk image or Downloads, 1UP offers to move itself to Applications so it can start at login.
 3. **Click Got it**That's the whole setup. Sessions you already have open show up straight away, and 1UP asks for no permissions.
 
-You don't sign in, add an API key, restart Claude Code, add hooks, edit settings or open a terminal. 1UP reads the status Claude Code already keeps for every session (version 2.1.261 or later). It finds every session and config folder by itself, however Claude Code was installed, including `npm run work` worktrees.
+You don't sign in, add an API key, restart Claude Code, add hooks, edit settings or open a terminal. 1UP reads the status Claude Code already keeps for every session (version 2.1.261 or later). It finds every session and config folder by itself, however Claude Code was installed, including git worktrees.
 
 ### Settings: two choices
 
@@ -466,7 +466,7 @@ macOS menu bar app (Swift 6, macOS 14+) that shows Claude Code session states. d
 
 We each run four to eight Claude Code sessions across terminal tabs and editor windows. A session that stops to ask a question or wait for approval sits there until someone happens to check its tab. Finished work waits too. We find out by cycling through tabs, which breaks whatever we were focused on.
 
-1UP puts one honest answer in the menu bar: does anything need me, and has anything finished? Success looks like this:   **< 60 s**Median time from "needs you" to answered. Measured during the pilot from 1UP's own local log. **0**Wrong-state periods longer than 2 s in the release test run. **4 of 5**Pilot teammates still running it after two weeks. **0**Wrong states reported in `#1up` during the pilot's second week.
+1UP puts one honest answer in the menu bar: does anything need me, and has anything finished? Success looks like this:   **< 60 s**Median time from "needs you" to answered. Measured during the pilot from 1UP's own local log. **0**Wrong-state periods longer than 2 s in the release test run. **4 of 5**Pilot teammates still running it after two weeks. **0**Wrong states reported as issues during the pilot's second week.
 
 ### What already exists
 
@@ -489,7 +489,7 @@ Several Claude Code menu bar monitors already exist. The spike starts by trying 
 
 Every running Claude Code session keeps a small status file at `~/.claude/sessions/<pid>.json`. Claude Code rewrites it whenever the status or the waiting reason changes, and stamps the time in `statusUpdatedAt`. It is also rewritten on renames and bookkeeping, when only `updatedAt` moves. Claude Code's own `claude agents` command reads these same files.
 
-1UP watches that folder and reads a file only when it changes. Done comes from the session's transcript, where Claude Code writes a `turn_duration` record at the end of every turn. Nothing else is read and nothing is polled every second.   **Why not use `claude agents --json` alone? It calls a finished turn "busy".** Two sessions reported `busy` for more than 24 hours. Both terminals were at an empty prompt. Each turn had ended, but a background shell the turn started was still running (a `wc -l` stuck on a socket, and a `npm run work logs | tail` that never exits). The status file says `shell` for exactly this case. The JSON output folds it into `busy`, and the agent view shows both as working. Using the JSON alone, 1UP would show Working forever and never show those turns as Done.
+1UP watches that folder and reads a file only when it changes. Done comes from the session's transcript, where Claude Code writes a `turn_duration` record at the end of every turn. Nothing else is read and nothing is polled every second.   **Why not use `claude agents --json` alone? It calls a finished turn "busy".** Two sessions reported `busy` for more than 24 hours. Both terminals were at an empty prompt. Each turn had ended, but a background shell the turn started was still running (a `wc -l` stuck on a socket, and a `npm run dev | tail` that never exits). The status file says `shell` for exactly this case. The JSON output folds it into `busy`, and the agent view shows both as working. Using the JSON alone, 1UP would show Working forever and never show those turns as Done.
 
 ### How Claude Code's status becomes a 1UP state
 
@@ -651,14 +651,14 @@ icon-ink.png        optional · 14 × 14 alpha mask drawn in the menu bar's text
 - **Built-ins come from this page.** `tools/render-themes.mjs` runs the scene code from this spec's preview with the sprite data from Start here and writes the five folders. Its output is committed, so the app ships plain PNGs.
 - **Original art and names** (Chomp, Invaders, Kong, Galaxy, Blocks), in the spirit of the classics, so a public repo stays clean.
 
-### How it fits our setup
+### How it fits a team
 
 | Where | What 1UP does there |
 |---|---|
-| GitHub (`hoberobin/1up`, public) | Source, PR reviews and Releases. The `@claude review` flow works as on our main repo. |
+| GitHub (`hoberobin/1up`, public) | Source, PR reviews, Issues and Releases. |
 | Claude Code | Builds it: the repo's `CLAUDE.md` carries the rules and this spec. Users need nothing extra: no hooks, no plugins, no settings. |
-| `npm run work` worktrees | Rows show the worktree name, so `work-pages-bg` reads as `pages-bg`. |
-| Slack | A `#1up` channel. If 1UP ever disagrees with a terminal, post what you saw and attach that day's log file. |
+| Git worktrees named `work-<name>` | Rows show the worktree name, so `work-pages-bg` reads as `pages-bg`. |
+| Issues | If 1UP ever disagrees with a terminal, open an issue with what you saw and attach that day's log file. |
 
 ### Two ways to get it
 
@@ -738,7 +738,7 @@ English only in v1, with every string through `String(localized:)`. Durations us
 | **M2 · Menu bar and panel** 2 days | `tools/render-themes.mjs` and the Chomp theme folder, menu bar item, panel with states and where each session runs, Done clearing | Screenshots match the UI reference, and this page's preview where the reference is silent, at 1× and 2×, light and dark. Keyboard and VoiceOver work as in the UI reference. |
 | **M3 · Everyday use** 2 days | Welcome card, Check my setup, Settings, move to Applications | A teammate installs it without help in under a minute, and every Check my setup failure says what to do. |
 | **M4 · Themes** 1 day | The other four theme folders and the theme picker | `ThemeTests` pass and every theme matches the gallery on this page. |
-| **M5 · Ship and pilot** 1 week | Signing, notarising, Sparkle, README. Pilot with five people across at least three terminals, anything wrong reported in `#1up`. | The success numbers at the top of this half are met. Then share with everyone. |
+| **M5 · Ship and pilot** 1 week | Signing, notarising, Sparkle, README. Pilot with five people across at least three terminals, anything wrong reported as an issue. | The success numbers at the top of this half are met. Then share with everyone. |
 
 ### After the pilot: useful first, then fun
 
@@ -764,7 +764,7 @@ English only in v1, with every string through `String(localized:)`. Durations us
 | Jump to the session's tab? | Not in v1. Rows say where the session runs instead. | It needs an extension, extra permissions and per-terminal cases, and a wrong landing costs trust. It comes back only if it passes its own 20-of-20 test. |
 | Turns that ended before 1UP was installed? | Idle. Everything running at first launch counts as already looked at. | Simple, and you never start with a pile of checks. |
 | Interrupted or errored turns? | Done. The row says "Interrupted · ran Xm" when the 1.5 s rule fired, otherwise "Ended · ran Xm". | Honest without reading reply text. |
-| Alerts, shortcut, previews, report a mismatch, Homebrew? | Not in v1 | Each adds a moving part without making the core more accurate. Fixture tests and the daily log cover accuracy; post in `#1up` if something looks wrong. |
+| Alerts, shortcut, previews, report a mismatch, Homebrew? | Not in v1 | Each adds a moving part without making the core more accurate. Fixture tests and the daily log cover accuracy; open an issue if something looks wrong. |
 | How does Done clear? | Row click, Mark all looked at, or the next prompt in that session | Simple and predictable. Nothing watches your terminals. |
 
 ### The name

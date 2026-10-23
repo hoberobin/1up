@@ -5,7 +5,7 @@ import os
 public final class ChangeLog: @unchecked Sendable {
   public static let retentionDays = 7
   private let directory: URL
-  private let logger = Logger(subsystem: "com.masterytrack.oneup", category: "state")
+  private let logger = Logger(subsystem: "com.hoberobin.oneup", category: "state")
   private let lock = NSLock()
   private let dayFormatter: DateFormatter = {
     let f = DateFormatter()

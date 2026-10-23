@@ -231,7 +231,7 @@ ol.tight { margin: 0; padding-left: 22px; display: flex; flex-direction: column;
         <li><div><b>Open it</b><span>Your arcade scene appears in the menu bar. If you opened it from the disk image or Downloads, 1UP offers to move itself to Applications so it can start at login.</span></div></li>
         <li><div><b>Click Got it</b><span>That's the whole setup. Sessions you already have open show up straight away, and 1UP asks for no permissions.</span></div></li>
       </ol>
-      <p>You don't sign in, add an API key, restart Claude Code, add hooks, edit settings or open a terminal. 1UP reads the status Claude Code already keeps for every session (version 2.1.261 or later). It finds every session and config folder by itself, however Claude Code was installed, including <code>npm run work</code> worktrees.</p>
+      <p>You don't sign in, add an API key, restart Claude Code, add hooks, edit settings or open a terminal. 1UP reads the status Claude Code already keeps for every session (version 2.1.261 or later). It finds every session and config folder by itself, however Claude Code was installed, including git worktrees.</p>
       <h3>Settings: two choices</h3>
       <ul class="tight">
         <li>Open at login (on)</li>
@@ -729,7 +729,7 @@ macOS menu bar app (Swift 6, macOS 14+) that shows Claude Code session states. d
     <div class="metric"><b>&lt; 60 s</b><span>Median time from "needs you" to answered. Measured during the pilot from 1UP's own local log.</span></div>
     <div class="metric"><b>0</b><span>Wrong-state periods longer than 2 s in the release test run.</span></div>
     <div class="metric"><b>4 of 5</b><span>Pilot teammates still running it after two weeks.</span></div>
-    <div class="metric"><b>0</b><span>Wrong states reported in <code>#1up</code> during the pilot's second week.</span></div>
+    <div class="metric"><b>0</b><span>Wrong states reported as issues during the pilot's second week.</span></div>
   </div>
   <h3>What already exists</h3>
   <p class="col">Several Claude Code menu bar monitors already exist. The spike starts by trying the two closest for a day each. If one passes our gate, we adopt it instead of building.</p>
@@ -755,7 +755,7 @@ macOS menu bar app (Swift 6, macOS 14+) that shows Claude Code session states. d
   </div>
   <div class="callout">
     <b>Why not use <code>claude agents --json</code> alone? It calls a finished turn "busy".</b>
-    <span>Two sessions reported <code>busy</code> for more than 24 hours. Both terminals were at an empty prompt. Each turn had ended, but a background shell the turn started was still running (a <code>wc -l</code> stuck on a socket, and a <code>npm run work logs | tail</code> that never exits). The status file says <code>shell</code> for exactly this case. The JSON output folds it into <code>busy</code>, and the agent view shows both as working. Using the JSON alone, 1UP would show Working forever and never show those turns as Done.</span>
+    <span>Two sessions reported <code>busy</code> for more than 24 hours. Both terminals were at an empty prompt. Each turn had ended, but a background shell the turn started was still running (a <code>wc -l</code> stuck on a socket, and a <code>npm run dev | tail</code> that never exits). The status file says <code>shell</code> for exactly this case. The JSON output folds it into <code>busy</code>, and the agent view shows both as working. Using the JSON alone, 1UP would show Working forever and never show those turns as Done.</span>
   </div>
   <h3>How Claude Code's status becomes a 1UP state</h3>
   <div class="tbl"><table>
@@ -881,14 +881,14 @@ icon-ink.png        optional · 14 × 14 alpha mask drawn in the menu bar's text
     <li><b>Built-ins come from this page.</b> <code>tools/render-themes.mjs</code> runs the scene code from this spec's preview with the sprite data from Start here and writes the five folders. Its output is committed, so the app ships plain PNGs.</li>
     <li><b>Original art and names</b> (Chomp, Invaders, Kong, Galaxy, Blocks), in the spirit of the classics, so a public repo stays clean.</li>
   </ul>
-  <h3>How it fits our setup</h3>
+  <h3>How it fits a team</h3>
   <div class="tbl"><table>
     <thead><tr><th>Where</th><th>What 1UP does there</th></tr></thead>
     <tbody>
-      <tr><td>GitHub (<code>hoberobin/1up</code>, public)</td><td>Source, PR reviews and Releases. The <code>@claude review</code> flow works as on our main repo.</td></tr>
+      <tr><td>GitHub (<code>hoberobin/1up</code>, public)</td><td>Source, PR reviews, Issues and Releases.</td></tr>
       <tr><td>Claude Code</td><td>Builds it: the repo's <code>CLAUDE.md</code> carries the rules and this spec. Users need nothing extra: no hooks, no plugins, no settings.</td></tr>
-      <tr><td><code>npm run work</code> worktrees</td><td>Rows show the worktree name, so <code>work-pages-bg</code> reads as <code>pages-bg</code>.</td></tr>
-      <tr><td>Slack</td><td>A <code>#1up</code> channel. If 1UP ever disagrees with a terminal, post what you saw and attach that day's log file.</td></tr>
+      <tr><td>Git worktrees named <code>work-&lt;name&gt;</code></td><td>Rows show the worktree name, so <code>work-pages-bg</code> reads as <code>pages-bg</code>.</td></tr>
+      <tr><td>Issues</td><td>If 1UP ever disagrees with a terminal, open an issue with what you saw and attach that day's log file.</td></tr>
     </tbody>
   </table></div>
   <h3>Two ways to get it</h3>
@@ -955,7 +955,7 @@ icon-ink.png        optional · 14 × 14 alpha mask drawn in the menu bar's text
       <tr><td><b>M2 · Menu bar and panel</b><br>2 days</td><td><code>tools/render-themes.mjs</code> and the Chomp theme folder, menu bar item, panel with states and where each session runs, Done clearing</td><td>Screenshots match the UI reference, and this page's preview where the reference is silent, at 1× and 2×, light and dark. Keyboard and VoiceOver work as in the UI reference.</td></tr>
       <tr><td><b>M3 · Everyday use</b><br>2 days</td><td>Welcome card, Check my setup, Settings, move to Applications</td><td>A teammate installs it without help in under a minute, and every Check my setup failure says what to do.</td></tr>
       <tr><td><b>M4 · Themes</b><br>1 day</td><td>The other four theme folders and the theme picker</td><td><code>ThemeTests</code> pass and every theme matches the gallery on this page.</td></tr>
-      <tr><td><b>M5 · Ship and pilot</b><br>1 week</td><td>Signing, notarising, Sparkle, README. Pilot with five people across at least three terminals, anything wrong reported in <code>#1up</code>.</td><td>The success numbers at the top of this half are met. Then share with everyone.</td></tr>
+      <tr><td><b>M5 · Ship and pilot</b><br>1 week</td><td>Signing, notarising, Sparkle, README. Pilot with five people across at least three terminals, anything wrong reported as an issue.</td><td>The success numbers at the top of this half are met. Then share with everyone.</td></tr>
     </tbody>
   </table></div>
   <h3>After the pilot: useful first, then fun</h3>
@@ -983,7 +983,7 @@ icon-ink.png        optional · 14 × 14 alpha mask drawn in the menu bar's text
       <tr><td>Jump to the session's tab?</td><td>Not in v1. Rows say where the session runs instead.</td><td>It needs an extension, extra permissions and per-terminal cases, and a wrong landing costs trust. It comes back only if it passes its own 20-of-20 test.</td></tr>
       <tr><td>Turns that ended before 1UP was installed?</td><td>Idle. Everything running at first launch counts as already looked at.</td><td>Simple, and you never start with a pile of checks.</td></tr>
       <tr><td>Interrupted or errored turns?</td><td>Done. The row says "Interrupted · ran Xm" when the 1.5 s rule fired, otherwise "Ended · ran Xm".</td><td>Honest without reading reply text.</td></tr>
-      <tr><td>Alerts, shortcut, previews, report a mismatch, Homebrew?</td><td>Not in v1</td><td>Each adds a moving part without making the core more accurate. Fixture tests and the daily log cover accuracy; post in <code>#1up</code> if something looks wrong.</td></tr>
+      <tr><td>Alerts, shortcut, previews, report a mismatch, Homebrew?</td><td>Not in v1</td><td>Each adds a moving part without making the core more accurate. Fixture tests and the daily log cover accuracy; open an issue if something looks wrong.</td></tr>
       <tr><td>How does Done clear?</td><td>Row click, Mark all looked at, or the next prompt in that session</td><td>Simple and predictable. Nothing watches your terminals.</td></tr>
     </tbody>
   </table></div>

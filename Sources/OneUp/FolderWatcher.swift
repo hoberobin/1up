@@ -4,7 +4,7 @@ import Foundation
 /// FSEvents on the sessions folders, file-level, 100 ms latency. The 5 s scan covers anything it drops.
 final class FolderWatcher: @unchecked Sendable {
   private var stream: FSEventStreamRef?
-  private let queue = DispatchQueue(label: "com.masterytrack.oneup.fsevents")
+  private let queue = DispatchQueue(label: "com.hoberobin.oneup.fsevents")
   private let handler: @Sendable () -> Void
 
   init?(paths: [String], handler: @escaping @Sendable () -> Void) {

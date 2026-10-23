@@ -2,7 +2,7 @@
 # tools/make-app.sh builds the same app with SwiftPM alone.
 name: 1UP
 options:
-  bundleIdPrefix: com.masterytrack
+  bundleIdPrefix: com.hoberobin
   deploymentTarget:
     macOS: "14.0"
   createIntermediateGroups: true
@@ -28,7 +28,7 @@ targets:
       path: Sources/OneUp/Support/1UP.entitlements
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.masterytrack.oneup
+        PRODUCT_BUNDLE_IDENTIFIER: com.hoberobin.oneup
         PRODUCT_NAME: 1UP
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: complete
