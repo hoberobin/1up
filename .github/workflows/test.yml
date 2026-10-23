@@ -13,5 +13,5 @@ jobs:
           xcode-version: latest-stable
       - run: swift build
       - run: swift test
-      - run: node tools/render-themes.mjs --out /tmp/themes && diff -r /tmp/themes Resources/Themes
+      - run: node tools/render-themes.mjs --check
       - run: tools/make-app.sh

@@ -2,12 +2,13 @@
 // Renders the five built-in theme folders from the spec's scene code (docs/SPEC.html, THEMES object).
 // Output is committed, so the app ships plain PNGs. No dependencies: a pixel-buffer canvas and a PNG encoder.
 //
-//   node tools/render-themes.mjs [--out Resources/Themes] [--preview path.png]
+//   node tools/render-themes.mjs [--out Resources/Themes] [--preview path.png] [--check]
+//   --check renders in memory and compares pixels with the folder, so CI passes whatever zlib Node ships with.
 //
 // Layers come from rendering each scene twice with two sentinel colours in the ink (or tint) slot:
 // pixels that follow the sentinel are the ink/tint mask, everything else is fixed-colour art.
-import { deflateSync } from 'node:zlib';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { deflateSync, inflateSync } from 'node:zlib';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -15,6 +16,26 @@ const args = process.argv.slice(2);
 const arg = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
 const OUT = arg('--out', join(dirname(fileURLToPath(import.meta.url)), '..', 'Resources', 'Themes'));
 const PREVIEW = arg('--preview', null);
+const CHECK = args.includes('--check');
+const mismatches = [];
+
+// IHDR plus the inflated scanlines: what a PNG means, independent of how its encoder packed it.
+function pngPayload(buf) {
+  let i = 8, ihdr = Buffer.alloc(0);
+  const idat = [];
+  while (i < buf.length) {
+    const len = buf.readUInt32BE(i), type = buf.toString('latin1', i + 4, i + 8), data = buf.subarray(i + 8, i + 8 + len);
+    if (type === 'IHDR') ihdr = data; else if (type === 'IDAT') idat.push(data);
+    i += 12 + len;
+  }
+  return Buffer.concat([ihdr, inflateSync(Buffer.concat(idat))]);
+}
+
+function emit(path, buf) {
+  if (!CHECK) { writeFileSync(path, buf); return; }
+  const same = existsSync(path) && (path.endsWith('.png') ? pngPayload(readFileSync(path)).equals(pngPayload(buf)) : readFileSync(path).equals(buf));
+  if (!same) mismatches.push(path);
+}
 
 // ---- Minimal canvas: only what the scene code uses (fillStyle, globalAlpha, fillRect). ----
 function parseColor(c) {
@@ -218,8 +239,8 @@ function renderTheme(id) {
 
   const dir = join(OUT, id);
   mkdirSync(dir, { recursive: true });
-  const write = (name, layer) => writeFileSync(join(dir, name), png(layer.w, layer.h, toBuffer(layer)));
-  writeFileSync(join(dir, 'theme.json'), JSON.stringify({ schema: 1, id, name: th.name, after: th.after, fps: 8, idleFrame: IDLE_FRAME[id] }, null, 2) + '\n');
+  const write = (name, layer) => emit(join(dir, name), png(layer.w, layer.h, toBuffer(layer)));
+  emit(join(dir, 'theme.json'), JSON.stringify({ schema: 1, id, name: th.name, after: th.after, fps: 8, idleFrame: IDLE_FRAME[id] }, null, 2) + '\n');
   write('scene.png', scene);
   if (ink.used) write('scene-ink.png', ink);
   if (!sameLayer(scene, dark)) write('scene-dark.png', dark);
@@ -233,6 +254,10 @@ function renderTheme(id) {
 }
 
 for (const id of Object.keys(THEMES)) renderTheme(id);
+if (CHECK) {
+  if (mismatches.length) { console.error('themes differ from the spec:\n  ' + mismatches.join('\n  ')); process.exit(1); }
+  console.log('themes match the spec');
+}
 
 // ---- Optional preview sheet: every theme's working frame 0, still frame, need, done and icon on a dark bar at 4x. ----
 if (PREVIEW) {

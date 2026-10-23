@@ -68,7 +68,7 @@ swift build                   # core, app binary and oneup-dump
 swift test                    # reducer fixtures, engine, themes, captured real files
 swift run oneup-dump          # one line per session every second, no UI
 tools/make-app.sh --zip       # build/1UP.app (universal, with icon) and build/1UP.zip
-node tools/render-themes.mjs  # rebuild Resources/Themes from the spec's scene code
+node tools/render-themes.mjs  # rebuild Resources/Themes from the spec's scene code (--check compares instead)
 tools/capture-fixtures.sh     # copy scrubbed status files + transcript tails into Tests/.../Fixtures/<version>
 .build/release/oneup-app --render-all docs/images   # every screenshot in this README
 ```
