@@ -31,8 +31,9 @@ function pngPayload(buf) {
   return Buffer.concat([ihdr, inflateSync(Buffer.concat(idat))]);
 }
 
-function emit(path, buf) {
-  if (!CHECK) { writeFileSync(path, buf); return; }
+function emit(path, data) {
+  if (!CHECK) { writeFileSync(path, data); return; }
+  const buf = Buffer.from(data);
   const same = existsSync(path) && (path.endsWith('.png') ? pngPayload(readFileSync(path)).equals(pngPayload(buf)) : readFileSync(path).equals(buf));
   if (!same) mismatches.push(path);
 }
