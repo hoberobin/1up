@@ -12,7 +12,7 @@ let package = Package(
   targets: [
     .target(name: "OneUpCore"),
     .executableTarget(name: "oneup-dump", dependencies: ["OneUpCore"]),
-    .executableTarget(name: "OneUp", dependencies: ["OneUpCore"]),
+    .executableTarget(name: "OneUp", dependencies: ["OneUpCore"], exclude: ["Support"]),
     .testTarget(
       name: "OneUpCoreTests",
       dependencies: ["OneUpCore"],

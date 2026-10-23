@@ -1,0 +1,24 @@
+{
+ "pid": 80240,
+ "sessionId": "<session>",
+ "cwd": "/Users/<user>/Sites/<project>",
+ "startedAt": 1792784490108,
+ "procStart": "Fri Oct 23 19:41:29 2026",
+ "version": "2.1.309",
+ "peerProtocol": 1,
+ "peerFeatures": [
+  "notify_idle",
+  "reply_across_default_dirs",
+  "artifact_yield"
+ ],
+ "kind": "interactive",
+ "entrypoint": "cli",
+ "pidDomain": "darwin",
+ "messagingSocketPath": "/tmp/cc-socks/<pid>.sock",
+ "name": "<name>",
+ "nameSource": "derived",
+ "nameSince": 1792784490108,
+ "status": "idle",
+ "updatedAt": 1792786452301,
+ "statusUpdatedAt": 1792786452301
+}

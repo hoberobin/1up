@@ -132,6 +132,11 @@ public final class SessionEngine {
     var app: String?
     var appResolved: Bool
     var state: SessionState
+    /// Set while the file on disk does not parse; the row is a placeholder keyed by pid alone.
+    var failure: String?
+
+    /// What the reducer should see on a timer pass: a placeholder stays a failed read, never a status of "?".
+    var read: StatusRead { failure.map { .failed($0) } ?? .ok(status) }
   }
 
   public let options: Options
@@ -209,7 +214,7 @@ public final class SessionEngine {
       guard var l = live[key] else { continue }
       let memory = state.sessions[key] ?? SessionMemory(lastLookedAt: now)
       let r = Reducer.reduce(
-        memory: memory, read: .ok(l.status),
+        memory: memory, read: l.read,
         transcript: TranscriptInfo(exists: l.transcriptExists, latestTurnEnd: l.scan.latestTurnEnd), now: now)
       apply(reduction: r, to: &l, key: key, memory: memory, now: now)
       live[key] = l
@@ -237,7 +242,7 @@ public final class SessionEngine {
     state.sessions[key] = memory
     dirty = true
     let r = Reducer.reduce(
-      memory: memory, read: .ok(l.status),
+      memory: memory, read: l.read,
       transcript: TranscriptInfo(exists: l.transcriptExists, latestTurnEnd: l.scan.latestTurnEnd), now: now)
     apply(reduction: r, to: &l, key: key, memory: memory, now: now)
     live[key] = l
@@ -248,7 +253,7 @@ public final class SessionEngine {
 
   @discardableResult
   public func markAllLookedAt(now: Int64 = SessionEngine.nowMs()) -> Snapshot {
-    for key in live.keys where live[key]!.state.isDone { markLookedAt(key: key, now: now) }
+    for (key, l) in live where l.state.isDone { markLookedAt(key: key, now: now) }
     return snapshot
   }
 
@@ -275,8 +280,9 @@ public final class SessionEngine {
       var l = existing?.value ?? Live(
         status: StatusFile(pid: pid, sessionId: "", cwd: "", status: "?", startedAt: now, procStart: "", statusUpdatedAt: now),
         configDir: configDir, fileURL: url, modified: modified, transcriptURL: nil, scan: TranscriptScan(), transcriptExists: false,
-        app: nil, appResolved: true, state: .unknown(reason: reason, settled: false))
+        app: nil, appResolved: true, state: .unknown(reason: reason, settled: false), failure: reason)
       l.modified = modified
+      l.failure = reason
       let memory = state.sessions[key] ?? SessionMemory(lastLookedAt: now)
       let r = Reducer.reduce(memory: memory, read: .failed(reason), transcript: .none, now: now)
       let isNew = live[key] == nil
@@ -298,6 +304,7 @@ public final class SessionEngine {
       l.modified = modified
       l.configDir = configDir
       l.fileURL = url
+      l.failure = nil
       var memory = state.sessions[key] ?? SessionMemory(lastLookedAt: firstLaunch ? now : s.startedAt)
       memory.exitedAt = nil
       if memory.sessionId != s.sessionId {

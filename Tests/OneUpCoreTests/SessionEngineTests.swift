@@ -182,3 +182,18 @@ extension SessionEngineTests {
     XCTAssertEqual(snap.rows.first?.state, .working)
   }
 }
+
+extension SessionEngineTests {
+  func testUnparseableFileKeepsItsReasonOnRecheck() throws {
+    let me = getpid()
+    try Data("{\"pid\":\(me),\"status\":\"busy\"".utf8).write(to: configDir.appendingPathComponent("sessions/\(me).json"))
+    let engine = makeEngine()
+    var snap = engine.refresh(now: 1000)
+    XCTAssertEqual(snap.rows.first?.state.line, "Can't read: Not valid JSON")
+    XCTAssertEqual(engine.nextRecheckAt, 1000 + Reducer.unknownGraceMs)
+    snap = engine.tick(now: 1000 + Reducer.unknownGraceMs)
+    XCTAssertEqual(snap.rows.first?.state, .unknown(reason: "Can't read: Not valid JSON", settled: true), "the timer recheck must not reinterpret the placeholder")
+    snap = engine.markAllLookedAt(now: 2000 + Reducer.unknownGraceMs)
+    XCTAssertEqual(snap.rows.first?.state, .unknown(reason: "Can't read: Not valid JSON", settled: true))
+  }
+}

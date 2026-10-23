@@ -3,6 +3,8 @@
 import json, sys
 
 d = json.load(open(sys.argv[1]))
+if "sessionId" in d:
+    d["sessionId"] = "<session>"
 if "name" in d:
     d["name"] = "<name>"
 if "cwd" in d:

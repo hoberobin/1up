@@ -64,7 +64,7 @@ public enum ThemeError: Error, Equatable, CustomStringConvertible {
 }
 
 public enum ThemeLoader {
-  nonisolated(unsafe) private static let idPattern = try! NSRegularExpression(pattern: "^[a-z][a-z0-9-]{1,31}$")
+  private static let idPattern = try! NSRegularExpression(pattern: "^[a-z][a-z0-9-]{1,31}$")
 
   /// Every subfolder that validates, plus one problem line per folder that did not.
   public static func loadAll(root: URL) -> (themes: [Theme], problems: [String]) {

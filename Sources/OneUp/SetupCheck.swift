@@ -15,7 +15,7 @@ struct SetupResult: Identifiable, Equatable {
 @MainActor
 enum SetupCheck {
   static let oldestSupported = "2.1.261"
-  static let newestTested = "2.1.295"
+  static let newestTested = "2.1.309"
 
   static func run(snapshot: Snapshot, themeProblems: [String]) -> [SetupResult] {
     var results = [sessions(snapshot), version(snapshot), login()]

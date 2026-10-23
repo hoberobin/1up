@@ -7,7 +7,6 @@ let home = ProcessInfo.processInfo.environment["CLAUDE_CONFIG_DIR"].map { URL(fi
 let once = CommandLine.arguments.contains("--once")
 let engine = SessionEngine(options: .init(homeConfigDir: home, stateURL: once ? nil : StateStore.defaultURL()))
 let clock = DateFormatter()
-clock.dateFormat = "HH:MM:ss"
 clock.dateFormat = "HH:mm:ss"
 
 func printSnapshot(_ s: Snapshot) {
