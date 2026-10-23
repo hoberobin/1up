@@ -86,7 +86,7 @@ struct SettingsView: View {
         Text("·")
         Button("Check for Updates") { actions.checkForUpdates() }.buttonStyle(.link)
         Text("·")
-        Link("GitHub", destination: URL(string: "https://github.com/masterytrack/1up")!)
+        Link("GitHub", destination: Links.repo)
       }
       .font(.system(size: 12))
       .foregroundStyle(.secondary)

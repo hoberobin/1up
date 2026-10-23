@@ -157,3 +157,62 @@ extension PreviewSheet {
     try png.write(to: url)
   }
 }
+
+extension PreviewSheet {
+  /// `1UP --render-icon dir`: writes dir/AppIcon.iconset from the fallback theme's icon so make-app.sh can run iconutil.
+  /// The art is generated rather than stored, so the icon can never drift from the theme it comes from.
+  static func renderIconSet(themes: [Theme], to dir: URL) throws {
+    guard let theme = themes.first(where: { $0.id == Theme.fallbackID }) ?? themes.first else {
+      throw NSError(domain: "icon", code: 1, userInfo: [NSLocalizedDescriptionKey: "no theme to draw"])
+    }
+    let iconset = dir.appendingPathComponent("AppIcon.iconset", isDirectory: true)
+    try FileManager.default.createDirectory(at: iconset, withIntermediateDirectories: true)
+    let master = try masterIcon(theme: theme)
+    for size in [16, 32, 128, 256, 512] {
+      for scale in [1, 2] {
+        let name = "icon_\(size)x\(size)\(scale == 2 ? "@2x" : "").png"
+        try writePNG(try resized(master, to: size * scale), to: iconset.appendingPathComponent(name))
+      }
+    }
+  }
+
+  /// Apple's icon grid: an 824 pt rounded square on a 1024 canvas. The sprite sits in the middle at 36×.
+  private static func masterIcon(theme: Theme) throws -> CGImage {
+    let side = 1024
+    let ctx = try context(side)
+    let plate = CGRect(x: 100, y: 100, width: 824, height: 824)
+    ctx.addPath(CGPath(roundedRect: plate, cornerWidth: 185, cornerHeight: 185, transform: nil))
+    ctx.setFillColor(NSColor(hex: 0x05060f).cgColor)
+    ctx.fillPath()
+    let scale: CGFloat = 36
+    let origin = (CGFloat(side) - CGFloat(Theme.iconSize) * scale) / 2
+    ThemeArt.drawThemeIcon(
+      theme: theme, ink: NSColor(hex: 0xf2f4ff), at: CGPoint(x: origin, y: origin), scale: scale,
+      in: PixelCanvas(ctx: ctx, height: CGFloat(side)))
+    guard let image = ctx.makeImage() else { throw NSError(domain: "icon", code: 2) }
+    return image
+  }
+
+  private static func resized(_ image: CGImage, to px: Int) throws -> CGImage {
+    let ctx = try context(px)
+    ctx.interpolationQuality = px < image.width ? .high : .none
+    ctx.draw(image, in: CGRect(x: 0, y: 0, width: px, height: px))
+    guard let out = ctx.makeImage() else { throw NSError(domain: "icon", code: 3) }
+    return out
+  }
+
+  private static func context(_ side: Int) throws -> CGContext {
+    guard let ctx = CGContext(
+      data: nil, width: side, height: side, bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(),
+      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+    else { throw NSError(domain: "icon", code: 4) }
+    return ctx
+  }
+
+  private static func writePNG(_ image: CGImage, to url: URL) throws {
+    guard let png = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) else {
+      throw NSError(domain: "icon", code: 5, userInfo: [NSLocalizedDescriptionKey: url.lastPathComponent])
+    }
+    try png.write(to: url)
+  }
+}

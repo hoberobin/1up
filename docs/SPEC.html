@@ -820,7 +820,7 @@ macOS menu bar app (Swift 6, macOS 14+) that shows Claude Code session states. d
   <div class="col stack">
     <p>1UP should stay small enough to read in one sitting. Target under 2,000 lines of Swift, one dependency (Sparkle for updates), and no background services. Clean code here means each file has one job, the decision logic has no side effects, and every rule in this spec has a test with the same name.</p>
   </div>
-  <div class="code"><div class="cap">Repo layout · github.com/masterytrack/1up</div><pre>1up/
+  <div class="code"><div class="cap">Repo layout · github.com/hoberobin/1up</div><pre>1up/
   Package.swift                 OneUpCore library + oneup-dump executable
   project.yml                   XcodeGen: the 1UP.app target (Info.plist, LSUIElement, entitlements, Sparkle)
   Sources/OneUpCore/             pure logic, no AppKit, fully unit-tested
@@ -885,7 +885,7 @@ icon-ink.png        optional · 14 × 14 alpha mask drawn in the menu bar's text
   <div class="tbl"><table>
     <thead><tr><th>Where</th><th>What 1UP does there</th></tr></thead>
     <tbody>
-      <tr><td>GitHub (<code>masterytrack</code>)</td><td>Source, PR reviews and Releases. The <code>@claude review</code> flow works as on our main repo.</td></tr>
+      <tr><td>GitHub (<code>hoberobin/1up</code>, public)</td><td>Source, PR reviews and Releases. The <code>@claude review</code> flow works as on our main repo.</td></tr>
       <tr><td>Claude Code</td><td>Builds it: the repo's <code>CLAUDE.md</code> carries the rules and this spec. Users need nothing extra: no hooks, no plugins, no settings.</td></tr>
       <tr><td><code>npm run work</code> worktrees</td><td>Rows show the worktree name, so <code>work-pages-bg</code> reads as <code>pages-bg</code>.</td></tr>
       <tr><td>Slack</td><td>A <code>#1up</code> channel. If 1UP ever disagrees with a terminal, post what you saw and attach that day's log file.</td></tr>
@@ -988,10 +988,10 @@ icon-ink.png        optional · 14 × 14 alpha mask drawn in the menu bar's text
     </tbody>
   </table></div>
   <h3>The name</h3>
-  <p class="col"><b>1UP.</b> In arcades, 1UP flashes when it's player one's turn, which is this app's main job. It replaced the working name Waka, which only fit one theme and would have sat next to WakaTime (about 23 million installs) in VS Code's marketplace. Identifiers: app <code>1UP</code>, repo <code>masterytrack/1up</code>, Swift module <code>OneUpCore</code>.</p>
+  <p class="col"><b>1UP.</b> In arcades, 1UP flashes when it's player one's turn, which is this app's main job. It replaced the working name Waka, which only fit one theme and would have sat next to WakaTime (about 23 million installs) in VS Code's marketplace. Identifiers: app <code>1UP</code>, repo <code>hoberobin/1up</code>, Swift module <code>OneUpCore</code>.</p>
   <h3>Still open</h3>
   <ul class="tight col">
-    <li><b>Public or private repo?</b> Recommended: public under <code>masterytrack</code>, MIT licence. Nothing in it is ours to protect, and public makes Releases and the update feed work with no logins. Private works too, but downloads and updates then need a hosted copy (for example an S3 bucket).</li>
+    <li><b>Public or private repo?</b> Recommended: public under <code>hoberobin/1up</code>, MIT licence (decided 2026-10-23; the repo lives there). Nothing in it is ours to protect, and public makes Releases and the update feed work with no logins. Private works too, but downloads and updates then need a hosted copy (for example an S3 bucket).</li>
     <li><b>Who holds the team Apple Developer ID</b> for signing and notarising?</li>
     <li><b>Backup owner</b> who can re-run the test when Claude Code changes its status files.</li>
   </ul>
@@ -1147,7 +1147,7 @@ icon-ink.png        optional · 14 × 14 alpha mask drawn in the menu bar's text
   </ul>
   <h3>Rendering the five built-in themes</h3>
   <ul class="tight col">
-    <li><code>tools/render-themes.mjs</code> (Node with <code>@napi-rs/canvas</code>) contains this page's <code>THEMES</code> scene code and sprite data unchanged. It samples the scene at <code>f = frame / 2</code> for N frames: Chomp 4, Invaders 24, Kong 23, Galaxy 32, Blocks 7.</li>
+    <li><code>tools/render-themes.mjs</code> (Node, no dependencies) contains this page's <code>THEMES</code> scene code and sprite data unchanged. It samples the scene at <code>f = frame / 2</code> for N frames: Chomp 4, Invaders 24, Kong 23, Galaxy 32, Blocks 7.</li>
     <li>It writes <code>scene.png</code> in colour, <code>scene-ink.png</code> for pixels the page draws in the menu bar text colour (dots, invaders, cannon, fighter body), and <code>scene-dark.png</code> for Chomp's darker yellow.</li>
     <li>Fixed-colour pixels inside icons go to <code>*-detail.png</code>: ghost and fireball eyes, the bee's yellow and blue, the hammer's dark band, and the Blocks bevel.</li>
     <li>Invaders' and Galaxy's panel icons use <code>icon-ink.png</code>. Picker tiles are 88 × 56 at 2× on <code>#05060f</code> with ink <code>#f2f4ff</code>, like the gallery screens on this page.</li>

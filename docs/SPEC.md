@@ -577,7 +577,7 @@ Scenes animate at 8 fps from pre-rendered frames and stop while the screen is lo
 
 1UP should stay small enough to read in one sitting. Target under 2,000 lines of Swift, one dependency (Sparkle for updates), and no background services. Clean code here means each file has one job, the decision logic has no side effects, and every rule in this spec has a test with the same name.
 
-**Repo layout · github.com/masterytrack/1up**
+**Repo layout · github.com/hoberobin/1up**
 
 ```
 1up/
@@ -655,7 +655,7 @@ icon-ink.png        optional · 14 × 14 alpha mask drawn in the menu bar's text
 
 | Where | What 1UP does there |
 |---|---|
-| GitHub (`masterytrack`) | Source, PR reviews and Releases. The `@claude review` flow works as on our main repo. |
+| GitHub (`hoberobin/1up`, public) | Source, PR reviews and Releases. The `@claude review` flow works as on our main repo. |
 | Claude Code | Builds it: the repo's `CLAUDE.md` carries the rules and this spec. Users need nothing extra: no hooks, no plugins, no settings. |
 | `npm run work` worktrees | Rows show the worktree name, so `work-pages-bg` reads as `pages-bg`. |
 | Slack | A `#1up` channel. If 1UP ever disagrees with a terminal, post what you saw and attach that day's log file. |
@@ -769,11 +769,11 @@ English only in v1, with every string through `String(localized:)`. Durations us
 
 ### The name
 
-**1UP.** In arcades, 1UP flashes when it's player one's turn, which is this app's main job. It replaced the working name Waka, which only fit one theme and would have sat next to WakaTime (about 23 million installs) in VS Code's marketplace. Identifiers: app `1UP`, repo `masterytrack/1up`, Swift module `OneUpCore`.
+**1UP.** In arcades, 1UP flashes when it's player one's turn, which is this app's main job. It replaced the working name Waka, which only fit one theme and would have sat next to WakaTime (about 23 million installs) in VS Code's marketplace. Identifiers: app `1UP`, repo `hoberobin/1up`, Swift module `OneUpCore`.
 
 ### Still open
 
-- **Public or private repo?** Recommended: public under `masterytrack`, MIT licence. Nothing in it is ours to protect, and public makes Releases and the update feed work with no logins. Private works too, but downloads and updates then need a hosted copy (for example an S3 bucket).
+- **Public or private repo?** Recommended: public under `hoberobin/1up`, MIT licence (decided 2026-10-23; the repo lives there). Nothing in it is ours to protect, and public makes Releases and the update feed work with no logins. Private works too, but downloads and updates then need a hosted copy (for example an S3 bucket).
 - **Who holds the team Apple Developer ID** for signing and notarising?
 - **Backup owner** who can re-run the test when Claude Code changes its status files.
 
@@ -915,7 +915,7 @@ Rows are evaluated top to bottom; the first match wins. ✱ = persisted. A new s
 
 ### Rendering the five built-in themes
 
-- `tools/render-themes.mjs` (Node with `@napi-rs/canvas`) contains this page's `THEMES` scene code and sprite data unchanged. It samples the scene at `f = frame / 2` for N frames: Chomp 4, Invaders 24, Kong 23, Galaxy 32, Blocks 7.
+- `tools/render-themes.mjs` (Node, no dependencies) contains this page's `THEMES` scene code and sprite data unchanged. It samples the scene at `f = frame / 2` for N frames: Chomp 4, Invaders 24, Kong 23, Galaxy 32, Blocks 7.
 - It writes `scene.png` in colour, `scene-ink.png` for pixels the page draws in the menu bar text colour (dots, invaders, cannon, fighter body), and `scene-dark.png` for Chomp's darker yellow.
 - Fixed-colour pixels inside icons go to `*-detail.png`: ghost and fireball eyes, the bee's yellow and blue, the hammer's dark band, and the Blocks bevel.
 - Invaders' and Galaxy's panel icons use `icon-ink.png`. Picker tiles are 88 × 56 at 2× on `#05060f` with ink `#f2f4ff`, like the gallery screens on this page.

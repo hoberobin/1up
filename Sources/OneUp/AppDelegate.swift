@@ -71,6 +71,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
   /// Sparkle lands with the signed release; until then this opens the Releases page.
   private func checkForUpdates() {
-    NSWorkspace.shared.open(URL(string: "https://github.com/masterytrack/1up/releases")!)
+    NSWorkspace.shared.open(Links.releases)
   }
 }

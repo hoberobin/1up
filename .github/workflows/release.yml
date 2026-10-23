@@ -1,10 +1,12 @@
-# Release on tag: build, sign, notarise, staple, upload the DMG and update the Sparkle feed.
-# Needs repo secrets DEVELOPER_ID_CERT_P12, DEVELOPER_ID_CERT_PASSWORD, NOTARY_KEY_ID, NOTARY_ISSUER_ID,
-# NOTARY_KEY_P8 and SPARKLE_ED_KEY. Until the team Developer ID is chosen, the job stops after the build.
+# Release on tag: test, build build/1UP.zip and attach it to a GitHub Release.
+# Signing and notarisation (spec milestone M5) slot in before the publish step once a Developer ID exists;
+# until then the app is ad-hoc signed and the README explains the one-time Gatekeeper step.
 name: Release
 on:
   push:
     tags: ["v*"]
+permissions:
+  contents: write
 jobs:
   release:
     runs-on: macos-15
@@ -14,11 +16,8 @@ jobs:
         with:
           xcode-version: latest-stable
       - run: swift test
-      - run: tools/make-app.sh
-      - name: Sign, notarise, staple, DMG, Sparkle feed
-        if: ${{ secrets.DEVELOPER_ID_CERT_P12 != '' }}
-        run: echo "signing pipeline lands with the Developer ID (spec: M5)"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: 1UP.app
-          path: build/1UP.app
+      - run: tools/make-app.sh --zip
+      - name: Publish the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" build/1UP.zip --title "1UP $GITHUB_REF_NAME" --generate-notes
